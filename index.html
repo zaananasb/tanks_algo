@@ -294,8 +294,8 @@ function generateWalls() {
     const j = Math.floor(Math.random()*(i+1));
     [cells[i], cells[j]] = [cells[j], cells[i]];
   }
-  return cells.slice(0, 28).map(c => {
-    const steel = Math.random() < 0.22;
+  return cells.slice(0, 46).map(c => {
+    const steel = Math.random() < 0.33;
     return { x:c.x, y:c.y, hp: steel?99:1, maxHp: steel?99:1 };
   });
 }
