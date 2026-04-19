@@ -397,7 +397,7 @@ function playSound(type) {
 //  в rooms/{code}/input/{myId}
 // ═══════════════════════════════════════════════
 function sendInput() {
-  if (!gameRunning || !myId) return;
+  if (!gameRunning || !myId || !roomCode) return;
   if (keys.space) {
     const now = Date.now();
     if (now - shootReq >= SHOOT_CD) shootReq = now;
@@ -405,10 +405,17 @@ function sendInput() {
   const now = Date.now();
   if (now - lastInput < INPUT_MS) return;
   lastInput = now;
-  set(ref(db, `rooms/${roomCode}/input/${myId}`), {
-    keys: { ...keys },
-    shoot: shootReq
-  });
+  update(ref(db, `rooms/${roomCode}/input/${myId}`), {
+    keys: {
+      up: !!keys.up,
+      down: !!keys.down,
+      left: !!keys.left,
+      right: !!keys.right,
+      space: !!keys.space
+    },
+    shoot: shootReq,
+    ts: now
+  }).catch(err => console.error('input update failed', err));
 }
 
 // ═══════════════════════════════════════════════
@@ -416,11 +423,20 @@ function sendInput() {
 // ═══════════════════════════════════════════════
 function setupHostInputListener() {
   onValue(ref(db, `rooms/${roomCode}/input`), snap => {
-    const data = snap.val();
-    if (data) {
-      for (const [pid, inp] of Object.entries(data)) {
-        hostInput[pid] = inp;
-      }
+    const data = snap.val() || {};
+    for (const key of Object.keys(hostInput)) delete hostInput[key];
+    for (const [pid, inp] of Object.entries(data)) {
+      hostInput[pid] = {
+        keys: {
+          up: !!inp?.keys?.up,
+          down: !!inp?.keys?.down,
+          left: !!inp?.keys?.left,
+          right: !!inp?.keys?.right,
+          space: !!inp?.keys?.space
+        },
+        shoot: inp?.shoot || 0,
+        ts: inp?.ts || 0
+      };
     }
   });
 }
@@ -586,6 +602,7 @@ function hostTick(ts) {
     if (p.dead) continue;
     const inp = hostInput[pid];
     if (!inp) continue;
+    if (inp.ts && now - inp.ts > 1000) continue;
 
     // Движение
     let nx=p.x, ny=p.y, ndir=p.dir, moved=false;
@@ -594,6 +611,9 @@ function hostTick(ts) {
     else if (inp.keys.left)  { nx-=SPEED; ndir='left';  moved=true; }
     else if (inp.keys.right) { nx+=SPEED; ndir='right'; moved=true; }
 
+    if (ndir !== p.dir) {
+      pUpdates[pid] = { ...(pUpdates[pid]||{}), dir: ndir };
+    }
     if (moved && !outBounds(nx,ny) && !hitsWall(nx,ny,walls)) {
       pUpdates[pid] = { ...(pUpdates[pid]||{}), x:nx, y:ny, dir:ndir };
     }
@@ -601,15 +621,19 @@ function hostTick(ts) {
     // Стрельба
     if (inp.shoot && inp.shoot > (hostLastShoot[pid]||0)) {
       hostLastShoot[pid] = inp.shoot;
+      const liveDir = (pUpdates[pid] && pUpdates[pid].dir) || ndir || p.dir;
+      const liveX = (pUpdates[pid] && pUpdates[pid].x) ?? p.x;
+      const liveY = (pUpdates[pid] && pUpdates[pid].y) ?? p.y;
       const off = HALF + 14;
-      let bx=p.x, by=p.y;
-      if      (p.dir==='up')    by-=off;
-      else if (p.dir==='down')  by+=off;
-      else if (p.dir==='left')  bx-=off;
-      else                      bx+=off;
+      let bx=liveX, by=liveY;
+      if      (liveDir==='up')    by-=off;
+      else if (liveDir==='down')  by+=off;
+      else if (liveDir==='left')  bx-=off;
+      else                        bx+=off;
       const bId = 'b'+now+'_'+pid+'_'+Math.random().toString(36).slice(2,6);
-      G.bullets[bId] = { x:bx, y:by, dir:p.dir, owner:pid };
-      bUpdates[bId]  = { x:bx, y:by, dir:p.dir, owner:pid };
+      G.bullets[bId] = { x:bx, y:by, dir:liveDir, owner:pid };
+      bUpdates[bId]  = { x:bx, y:by, dir:liveDir, owner:pid };
+      try { playSound('shoot'); } catch (e) { console.debug('shoot sound skipped', e); }
     }
   }
 
