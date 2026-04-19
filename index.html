@@ -3,153 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн — School Edition</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Танки Онлайн — School Edition v2</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: radial-gradient(ellipse at 50% 30%, #1a2035 0%, #0a0f1e 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Segoe UI', sans-serif;
-      color: white;
-      overflow: hidden;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden;
     }
     .retro { font-family: 'Press Start 2P', cursive; }
     .screen { display: none; }
     .screen.active { display: flex; }
     .card {
-      background: rgba(15, 23, 42, 0.97);
-      border: 1px solid #1e3a5f;
-      border-radius: 24px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.7);
-      padding: 36px;
-      max-width: 420px;
-      width: 100%;
+      background: rgba(15,23,42,0.97); border: 1px solid #1e3a5f; border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7); padding: 36px; max-width: 440px; width: 100%;
     }
     .btn {
-      width: 100%; padding: 14px 20px; border-radius: 14px;
-      font-weight: 700; font-size: 15px; border: none; cursor: pointer;
-      transition: all 0.18s; color: white;
+      width: 100%; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: 15px;
+      border: none; cursor: pointer; transition: all 0.18s; color: white;
     }
     .btn:hover:not(:disabled)  { transform: translateY(-2px); filter: brightness(1.15); }
     .btn:active:not(:disabled) { transform: translateY(0); }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; background: #374151 !important; }
-    .btn-green  { background: linear-gradient(135deg, #059669, #10b981); }
-    .btn-blue   { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-    .btn-orange { background: linear-gradient(135deg, #ea580c, #f97316); }
+    .btn-green  { background: linear-gradient(135deg,#059669,#10b981); }
+    .btn-blue   { background: linear-gradient(135deg,#2563eb,#3b82f6); }
+    .btn-orange { background: linear-gradient(135deg,#ea580c,#f97316); }
     .inp {
-      width: 100%; padding: 13px 16px;
-      background: rgba(0,0,0,0.4); border: 2px solid #1e3a5f;
-      border-radius: 12px; color: white; font-size: 16px; outline: none;
-      transition: border-color 0.2s;
+      width: 100%; padding: 13px 16px; background: rgba(0,0,0,0.4); border: 2px solid #1e3a5f;
+      border-radius: 12px; color: white; font-size: 16px; outline: none; transition: border-color 0.2s;
     }
-    .inp:focus        { border-color: #f97316; }
+    .inp:focus { border-color: #f97316; }
     .inp::placeholder { color: #475569; }
     @keyframes glow {
       0%,100% { text-shadow: 0 0 8px #f97316; }
-      50%      { text-shadow: 0 0 28px #f97316, 0 0 56px #f97316aa; }
+      50%     { text-shadow: 0 0 28px #f97316, 0 0 56px #f97316aa; }
     }
     .glow { animation: glow 2.5s ease-in-out infinite; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
     .pcard {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; background: rgba(0,0,0,0.35);
-      border: 1px solid #1e3a5f; border-radius: 12px;
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      background: rgba(0,0,0,0.35); border: 1px solid #1e3a5f; border-radius: 12px;
     }
     .dot  { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
     .tag  { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
     .tag-me   { background: #78350f; color: #fbbf24; }
     .tag-host { background: #14532d; color: #4ade80; }
     canvas {
-      display: block; border-radius: 12px;
-      border: 3px solid #1e3a5f;
-      box-shadow: 0 0 50px rgba(0,0,0,0.6);
-      background: #0f172a;
+      display: block; border-radius: 12px; border: 3px solid #1e3a5f;
+      box-shadow: 0 0 50px rgba(0,0,0,0.6); background: #0f172a;
     }
     #scoreboard {
-      max-width: 800px; width: 100%;
-      background: rgba(0,0,0,0.55); border: 1px solid #1e3a5f;
-      border-radius: 12px; padding: 8px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px; flex-wrap: wrap;
+      max-width: 800px; width: 100%; background: rgba(0,0,0,0.55); border: 1px solid #1e3a5f;
+      border-radius: 12px; padding: 8px 16px; display: flex; align-items: center;
+      justify-content: space-between; gap: 10px; flex-wrap: wrap;
     }
     #game-overlay {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.88); backdrop-filter: blur(8px);
-      border-radius: 12px; display: none;
-      flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 40px; z-index: 10;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px);
+      border-radius: 12px; display: none; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 40px; z-index: 10;
     }
     #game-overlay.show { display: flex; }
     #respawn-bar {
       position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.85); border: 1px solid #f97316;
-      border-radius: 30px; padding: 7px 22px; font-size: 13px; color: #fbbf24;
-      display: none; white-space: nowrap; z-index: 5;
+      background: rgba(0,0,0,0.85); border: 1px solid #f97316; border-radius: 30px;
+      padding: 7px 22px; font-size: 13px; color: #fbbf24; display: none;
+      white-space: nowrap; z-index: 5;
     }
     #respawn-bar.show { display: block; }
     #auth-error {
-      background: #7f1d1d; border: 1px solid #ef4444;
-      border-radius: 10px; padding: 10px 14px;
-      font-size: 13px; color: #fca5a5; display: none;
+      background: #7f1d1d; border: 1px solid #ef4444; border-radius: 10px;
+      padding: 10px 14px; font-size: 13px; color: #fca5a5; display: none;
     }
     #auth-error.show { display: block; }
   </style>
 </head>
 <body>
-<!-- ЭКРАН ВХОДА -->
+
+<!-- ═══════ ЭКРАН ВХОДА ═══════ -->
 <div id="screen-auth" class="screen active">
-  <div class="card">
-    <div style="text-align:center; margin-bottom:24px;">
+  <div class="card fade-in">
+    <div style="text-align:center;margin-bottom:24px;">
       <div style="display:inline-block;background:linear-gradient(135deg,#ea580c,#f97316);
                   padding:14px;border-radius:16px;margin-bottom:14px;">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="white">
-          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10
-                   3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
         </svg>
       </div>
-      <h1 class="retro" style="color:#f97316;font-size:13px;line-height:2;margin-bottom:6px;">
-        ТАНКИ ОНЛАЙН
-      </h1>
+      <h1 class="retro" style="color:#f97316;font-size:13px;line-height:2;margin-bottom:6px;">ТАНКИ ОНЛАЙН</h1>
       <p style="color:#475569;font-size:13px;">Школьная аркада • 2–6 игроков</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;">
-      <input class="inp" type="text" id="player-name"
-             placeholder="Введите ваше имя..." maxlength="12">
+      <input class="inp" type="text" id="player-name" placeholder="Введите ваше имя..." maxlength="12" autocomplete="off">
       <button class="btn btn-green" id="btn-create">🎓 Создать комнату (Учитель)</button>
       <div style="display:flex;gap:8px;align-items:stretch;">
         <input class="inp" type="text" id="room-code-input" placeholder="КОД" maxlength="5"
-               style="width:120px;text-align:center;text-transform:uppercase;
-                      font-size:20px;font-weight:900;letter-spacing:4px;">
+               style="width:120px;text-align:center;text-transform:uppercase;font-size:20px;font-weight:900;letter-spacing:4px;" autocomplete="off">
         <button class="btn btn-blue" id="btn-join" style="flex:1;">🎮 Войти</button>
       </div>
       <div id="auth-error"></div>
     </div>
   </div>
 </div>
-<!-- ЭКРАН ЛОББИ -->
+
+<!-- ═══════ ЭКРАН ЛОББИ ═══════ -->
 <div id="screen-lobby" class="screen">
-  <div class="card">
+  <div class="card fade-in">
     <div style="text-align:center;margin-bottom:20px;">
       <p style="color:#64748b;font-size:11px;letter-spacing:3px;margin-bottom:6px;">КОД КОМНАТЫ</p>
-      <div id="display-room-code" class="retro glow"
-           style="color:#f97316;font-size:32px;letter-spacing:10px;">-----</div>
+      <div id="display-room-code" class="retro glow" style="color:#f97316;font-size:32px;letter-spacing:10px;">-----</div>
       <p style="color:#64748b;font-size:11px;margin-top:6px;">Назовите этот код ученикам</p>
     </div>
     <div style="margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-        <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
-          Игроки
-        </span>
-        <span id="player-count-badge"
-              style="background:#1e3a5f;color:#60a5fa;font-size:11px;
-                     font-weight:700;padding:2px 10px;border-radius:20px;">0/6</span>
+        <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Игроки</span>
+        <span id="player-count-badge" style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">0/6</span>
       </div>
-      <div id="player-list" style="display:flex;flex-direction:column;gap:8px;
-                                   max-height:220px;overflow-y:auto;"></div>
+      <div id="player-list" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;"></div>
     </div>
     <div id="lobby-status" style="color:#64748b;font-size:13px;text-align:center;margin-bottom:12px;"></div>
     <div id="host-controls" style="display:none;">
@@ -163,12 +138,11 @@
     </div>
   </div>
 </div>
-<!-- ЭКРАН ИГРЫ -->
+
+<!-- ═══════ ЭКРАН ИГРЫ ═══════ -->
 <div id="screen-game" class="screen" style="flex-direction:column;gap:10px;align-items:center;">
   <div id="scoreboard">
-    <div style="font-size:12px;color:#64748b;">
-      Комната: <span id="ui-room" style="color:#f97316;font-weight:700;"></span>
-    </div>
+    <div style="font-size:12px;color:#64748b;">Комната: <span id="ui-room" style="color:#f97316;font-weight:700;"></span></div>
     <div id="ui-scores" style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;"></div>
     <div style="font-size:14px;" id="ui-lives"></div>
   </div>
@@ -179,25 +153,29 @@
       <h2 id="overlay-title" class="retro" style="font-size:20px;margin-bottom:12px;">ПОБЕДА!</h2>
       <p id="overlay-winner" style="font-size:20px;color:#fbbf24;font-weight:700;margin-bottom:8px;"></p>
       <div id="overlay-scores" style="color:#94a3b8;font-size:13px;margin-bottom:28px;line-height:1.8;"></div>
-      <button class="btn btn-orange" onclick="location.reload()"
-              style="width:auto;padding:12px 40px;font-size:15px;">🏠 В меню</button>
+      <button class="btn btn-orange" id="btn-menu" style="width:auto;padding:12px 40px;font-size:15px;">🏠 В меню</button>
     </div>
-    <div id="respawn-bar">
-      💀 Вы погибли! Возрождение через <strong id="respawn-timer">3</strong>с...
-    </div>
+    <div id="respawn-bar">💀 Вы погибли! Возрождение через <strong id="respawn-timer">3</strong>с...</div>
   </div>
-  <p style="color:#334155;font-size:11px;">
-    WASD / Стрелки — движение &nbsp;|&nbsp; Пробел — огонь
-  </p>
+  <p style="color:#334155;font-size:11px;">WASD / Стрелки — движение &nbsp;|&nbsp; Пробел — огонь</p>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  JAVASCRIPT — АРХИТЕКТУРА:                                  -->
+<!--  • Клиенты ТОЛЬКО отправляют ввод (клавиши) в Firebase       -->
+<!--  • Хост читает ввод, обрабатывает ВСЮ физику, пишет результат -->
+<!--  • Все клиенты читают результат и рисуют                     -->
+<!--  Это решает ВСЕ проблемы оригинала!                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }
   from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update, push, onDisconnect }
+import { getDatabase, ref, set, get, onValue, update, onDisconnect, remove }
   from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-// ================================================================
-//  КОНФИГ FIREBASE
-// ================================================================
+
+// ═══════════════════════════════════════════════
+//  FIREBASE
+// ═══════════════════════════════════════════════
 const firebaseConfig = {
   apiKey:            "AIzaSyAO-BLP_0IztO6f7tneV0U3RUaGAldVbt4",
   authDomain:        "tanks-algo.firebaseapp.com",
@@ -207,20 +185,24 @@ const firebaseConfig = {
   messagingSenderId: "1030648027213",
   appId:             "1:1030648027213:web:c99277654cc47721786404"
 };
-// ================================================================
 const fbApp = initializeApp(firebaseConfig);
 const db    = getDatabase(fbApp);
-// ── Константы ───────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════
+//  КОНСТАНТЫ
+// ═══════════════════════════════════════════════
 const W          = 800;
 const H          = 600;
-const HALF       = 18;      // полуразмер танка в пикселях
-const SPEED      = 3;       // скорость танка
-const BSPEED     = 9;       // скорость пули
-const SHOOT_CD   = 500;     // кулдаун стрельбы, мс
-const MAX_HP     = 3;       // HP за одну жизнь (3 попадания убивают)
-const MAX_LIVES  = 3;       // всего жизней у игрока
-const RESPAWN_MS = 3000;    // задержка перед возрождением
-// 6 уникальных стартовых позиций (углы + середины краёв)
+const HALF       = 18;
+const SPEED      = 3;
+const BSPEED     = 8;
+const SHOOT_CD   = 600;
+const MAX_HP     = 3;
+const MAX_LIVES  = 3;
+const RESPAWN_MS = 3000;
+const INPUT_MS   = 50;
+const HOST_HZ    = 30;
+
 const SPAWNS = [
   { x:  60, y:  60, dir: 'right' },
   { x: 740, y: 540, dir: 'left'  },
@@ -230,7 +212,10 @@ const SPAWNS = [
   { x: 400, y: 555, dir: 'up'    },
 ];
 const COLORS = ['#22c55e','#ef4444','#3b82f6','#eab308','#a855f7','#f97316'];
-// ── Состояние ───────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════
+//  СОСТОЯНИЕ
+// ═══════════════════════════════════════════════
 let myId          = null;
 let myName        = '';
 let roomCode      = null;
@@ -238,491 +223,682 @@ let isHost        = false;
 let gameRunning   = false;
 let gameOverShown = false;
 let roomRef       = null;
-let lastShot      = 0;
-// Локальная копия данных из Firebase
+
+// Локальная копия (только чтение — обновляется из Firebase)
 const G = {
-  players : {},   // { pN: {name,x,y,dir,hp,lives,score,color,dead,respawnAt} }
-  bullets : {},   // { bId: {x,y,dir,owner} }
-  walls   : [],   // [{x,y,hp,maxHp}]
+  players   : {},
+  bullets   : {},
+  walls     : [],
+  particles : [],   // [{x,y,vx,vy,life,maxLife,color,size}]
 };
-const keys = {};
+
+// Ввод текущего игрока
+const keys      = { up:false, down:false, left:false, right:false, space:false };
+let   shootReq  = 0;
+let   lastInput = 0;
+let   lastHostTick = 0;
+
+// Хост хранит последний ввод от каждого игрока
+const hostInput     = {};   // { p1: {keys, shoot}, ... }
+const hostLastShoot = {};   // { p1: timestamp, ... }
+
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+
+// ═══════════════════════════════════════════════
+//  КЛАВИАТУРА
+// ═══════════════════════════════════════════════
 window.addEventListener('keydown', e => {
-  keys[e.code] = true;
-  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))
+  if (!gameRunning) return;
+  switch (e.code) {
+    case 'ArrowUp':    case 'KeyW': keys.up    = true; break;
+    case 'ArrowDown':  case 'KeyS': keys.down  = true; break;
+    case 'ArrowLeft':  case 'KeyA': keys.left  = true; break;
+    case 'ArrowRight': case 'KeyD': keys.right = true; break;
+    case 'Space': keys.space = true; e.preventDefault(); break;
+  }
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))
     e.preventDefault();
 });
-window.addEventListener('keyup', e => { keys[e.code] = false; });
-// ── Утилиты UI ──────────────────────────────────────────────────
+window.addEventListener('keyup', e => {
+  switch (e.code) {
+    case 'ArrowUp':    case 'KeyW': keys.up    = false; break;
+    case 'ArrowDown':  case 'KeyS': keys.down  = false; break;
+    case 'ArrowLeft':  case 'KeyA': keys.left  = false; break;
+    case 'ArrowRight': case 'KeyD': keys.right = false; break;
+    case 'Space': keys.space = false; break;
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  UI УТИЛИТЫ
+// ═══════════════════════════════════════════════
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
 }
 function showError(msg) {
   const el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.classList.add('show');
+  el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 4500);
 }
-// ── Генерация карты ─────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════
+//  ГЕНЕРАЦИЯ КАРТЫ
+// ═══════════════════════════════════════════════
 function generateWalls() {
-  const CELL  = 40;
-  const cells = [];
-  for (let col = 1; col < W/CELL - 1; col++) {
-    for (let row = 1; row < H/CELL - 1; row++) {
-      const cx = col*CELL + CELL/2;
-      const cy = row*CELL + CELL/2;
-      // Не ставим рядом со спавнами и в центре
-      const nearSpawn = SPAWNS.some(s => Math.abs(s.x - cx) < 90 && Math.abs(s.y - cy) < 90);
-      const inCenter  = cx > 360 && cx < 440 && cy > 260 && cy < 340;
-      if (!nearSpawn && !inCenter) cells.push({ x: col*CELL, y: row*CELL });
+  const CELL = 40, cells = [];
+  for (let c = 1; c < W/CELL-1; c++)
+    for (let r = 1; r < H/CELL-1; r++) {
+      const cx = c*CELL+CELL/2, cy = r*CELL+CELL/2;
+      const near = SPAWNS.some(s => Math.abs(s.x-cx)<100 && Math.abs(s.y-cy)<100);
+      const ctr  = cx>340 && cx<460 && cy>240 && cy<360;
+      if (!near && !ctr) cells.push({ x: c*CELL, y: r*CELL });
     }
+  for (let i = cells.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [cells[i],cells[j]] = [cells[j],cells[i]];
   }
-  cells.sort(() => Math.random() - 0.5);
-  return cells.slice(0, 28).map(c => {
+  return cells.slice(0,28).map(c => {
     const steel = Math.random() < 0.22;
-    return { x: c.x, y: c.y, hp: steel ? 99 : 1, maxHp: steel ? 99 : 1 };
+    return { x:c.x, y:c.y, hp: steel?99:1, maxHp: steel?99:1 };
   });
 }
-// ── Коллизии ────────────────────────────────────────────────────
-function hitsWall(nx, ny) {
-  return G.walls.some(w => w &&
-    nx + HALF > w.x + 3 && nx - HALF < w.x + 37 &&
-    ny + HALF > w.y + 3 && ny - HALF < w.y + 37
-  );
+
+// ═══════════════════════════════════════════════
+//  КОЛЛИЗИИ
+// ═══════════════════════════════════════════════
+function hitsWall(nx, ny, walls) {
+  for (const w of walls) {
+    if (!w) continue;
+    if (nx+HALF>w.x+3 && nx-HALF<w.x+37 && ny+HALF>w.y+3 && ny-HALF<w.y+37) return true;
+  }
+  return false;
 }
 function outBounds(nx, ny) {
-  return nx - HALF < 0 || nx + HALF > W || ny - HALF < 0 || ny + HALF > H;
+  return nx-HALF<0 || nx+HALF>W || ny-HALF<0 || ny+HALF>H;
 }
-// ================================================================
-//  ВХОД
-// ================================================================
-document.getElementById('btn-create').onclick = async () => {
-  myName = document.getElementById('player-name').value.trim();
-  if (!myName) return showError('Введите имя!');
-  roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-  isHost   = true;
-  myId     = 'p1';
-  roomRef  = ref(db, 'rooms/' + roomCode);
-  const sp = SPAWNS[0];
-  await set(roomRef, {
-    status  : 'waiting',
-    walls   : generateWalls(),
-    bullets : {},
-    players : {
-      p1: {
-        name: myName, color: COLORS[0],
-        x: sp.x, y: sp.y, dir: sp.dir,
-        hp: MAX_HP, lives: MAX_LIVES, score: 0,
-        dead: false, respawnAt: null
+function hitsTank(bx, by, owner, players) {
+  for (const [pid, p] of Object.entries(players)) {
+    if (pid === owner || p.dead) continue;
+    if (Math.hypot(p.x-bx, p.y-by) < HALF+6) return pid;
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+//  ЧАСТИЦЫ
+// ═══════════════════════════════════════════════
+function spawnExplosion(x, y, color, count=18) {
+  for (let i = 0; i < count; i++) {
+    const a = Math.random()*Math.PI*2, sp = 1+Math.random()*4;
+    G.particles.push({
+      x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:20+Math.random()*20, maxLife:40,
+      color: Math.random()<0.4 ? '#fef9c3' : color,
+      size: 2+Math.random()*4
+    });
+  }
+}
+function spawnDebris(x, y) {
+  for (let i = 0; i < 8; i++) {
+    const a = Math.random()*Math.PI*2, sp = 1+Math.random()*2;
+    G.particles.push({
+      x:x+20, y:y+20, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:15+Math.random()*15, maxLife:30, color:'#92400e', size:2+Math.random()*3
+    });
+  }
+}
+function updateParticles() {
+  for (let i = G.particles.length-1; i >= 0; i--) {
+    const p = G.particles[i];
+    p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life--;
+    if (p.life <= 0) G.particles.splice(i, 1);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  ЗВУКИ (Web Audio API, без файлов)
+// ═══════════════════════════════════════════════
+let audioCtx = null;
+function playSound(type) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    const t = audioCtx.currentTime;
+    if (type==='shoot') {
+      o.type='square'; o.frequency.setValueAtTime(600,t);
+      o.frequency.exponentialRampToValueAtTime(200,t+0.1);
+      g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      o.start(t); o.stop(t+0.1);
+    } else if (type==='hit') {
+      o.type='sawtooth'; o.frequency.setValueAtTime(300,t);
+      o.frequency.exponentialRampToValueAtTime(80,t+0.2);
+      g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+      o.start(t); o.stop(t+0.2);
+    } else if (type==='explode') {
+      o.type='sawtooth'; o.frequency.setValueAtTime(150,t);
+      o.frequency.exponentialRampToValueAtTime(30,t+0.4);
+      g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+      o.start(t); o.stop(t+0.4);
+    } else if (type==='respawn') {
+      o.type='sine'; o.frequency.setValueAtTime(400,t);
+      o.frequency.exponentialRampToValueAtTime(800,t+0.15);
+      g.gain.setValueAtTime(0.08,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+      o.start(t); o.stop(t+0.15);
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════
+//  ОТПРАВКА ВВОДА (клиент → Firebase)
+//  Каждые 50мс пишем текущее состояние клавиш
+//  в rooms/{code}/input/{myId}
+// ═══════════════════════════════════════════════
+function sendInput() {
+  if (!gameRunning || !myId) return;
+  if (keys.space) {
+    const now = Date.now();
+    if (now - shootReq >= SHOOT_CD) shootReq = now;
+  }
+  const now = Date.now();
+  if (now - lastInput < INPUT_MS) return;
+  lastInput = now;
+  set(ref(db, `rooms/${roomCode}/input/${myId}`), {
+    keys: { ...keys },
+    shoot: shootReq
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  ПОДПИСКА ХОСТА НА ВВОД ИГРОКОВ
+// ═══════════════════════════════════════════════
+function setupHostInputListener() {
+  onValue(ref(db, `rooms/${roomCode}/input`), snap => {
+    const data = snap.val();
+    if (data) {
+      for (const [pid, inp] of Object.entries(data)) {
+        hostInput[pid] = inp;
       }
     }
   });
+}
+
+// ═══════════════════════════════════════════════
+//  ВХОД В ИГРУ
+// ═══════════════════════════════════════════════
+
+// --- Создать комнату ---
+document.getElementById('btn-create').onclick = async () => {
+  myName = document.getElementById('player-name').value.trim();
+  if (!myName) return showError('Введите имя!');
+  roomCode = Math.random().toString(36).substring(2,7).toUpperCase();
+  isHost   = true;
+  myId     = 'p1';
+  roomRef  = ref(db, 'rooms/' + roomCode);
+
+  const sp = SPAWNS[0];
+  await set(roomRef, {
+    status:'waiting', hostId:'p1',
+    walls: generateWalls(), bullets:{}, input:{},
+    players: {
+      p1: { name:myName, color:COLORS[0],
+            x:sp.x, y:sp.y, dir:sp.dir,
+            hp:MAX_HP, lives:MAX_LIVES, score:0,
+            dead:false, respawnAt:null }
+    }
+  });
   onDisconnect(roomRef).remove();
+  setupHostInputListener();  // хост слушает ввод
   openLobby();
 };
+
+// --- Войти в комнату ---
 document.getElementById('btn-join').onclick = async () => {
-  myName   = document.getElementById('player-name').value.trim();
+  myName = document.getElementById('player-name').value.trim();
   const code = document.getElementById('room-code-input').value.toUpperCase().trim();
   if (!myName)           return showError('Введите имя!');
   if (code.length !== 5) return showError('Код — ровно 5 символов!');
+
   roomCode = code;
   roomRef  = ref(db, 'rooms/' + roomCode);
   const snap = await get(roomRef);
   const data = snap.val();
   if (!data)                     return showError('Комната не найдена!');
   if (data.status === 'playing') return showError('Игра уже идёт!');
+
   const pKeys = Object.keys(data.players || {});
-  if (pKeys.length >= 6)         return showError('Комната заполнена (6/6)!');
+  if (pKeys.length >= 6) return showError('Комната заполнена (6/6)!');
+
   const idx = pKeys.length;
-  myId      = 'p' + (idx + 1);
-  const sp  = SPAWNS[idx];
+  myId     = 'p' + (idx+1);
+  const sp = SPAWNS[idx < SPAWNS.length ? idx : 0];
+
   await update(ref(db, `rooms/${roomCode}/players`), {
-    [myId]: {
-      name: myName, color: COLORS[idx],
-      x: sp.x, y: sp.y, dir: sp.dir,
-      hp: MAX_HP, lives: MAX_LIVES, score: 0,
-      dead: false, respawnAt: null
-    }
+    [myId]: { name:myName, color:COLORS[idx],
+              x:sp.x, y:sp.y, dir:sp.dir,
+              hp:MAX_HP, lives:MAX_LIVES, score:0,
+              dead:false, respawnAt:null }
   });
   onDisconnect(ref(db, `rooms/${roomCode}/players/${myId}`)).remove();
   openLobby();
 };
-// ── Лобби ───────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════
+//  ЛОББИ
+// ═══════════════════════════════════════════════
 function openLobby() {
-  document.getElementById('display-room-code').innerText = roomCode;
-  document.getElementById('ui-room').innerText           = roomCode;
+  document.getElementById('display-room-code').textContent = roomCode;
+  document.getElementById('ui-room').textContent           = roomCode;
   showScreen('lobby');
-  document.getElementById('host-controls').style.display  = isHost ? '' : 'none';
-  document.getElementById('student-wait').style.display   = isHost ? 'none' : '';
-  // ЕДИНСТВЕННАЯ подписка ко всей комнате
+  document.getElementById('host-controls').style.display = isHost ? '' : 'none';
+  document.getElementById('student-wait').style.display  = isHost ? 'none' : '';
+
   onValue(roomRef, snap => {
     const data = snap.val();
     if (!data) return;
-    // Синхронизируем локальный G
-    if (data.players) G.players = data.players;
+
+    // Обновляем локальную копию (ЧТЕНИЕ!)
+    if (data.players) G.players = { ...data.players };
     if (data.walls)   G.walls   = data.walls;
-    if (data.bullets) {
-      // Хост управляет пулями — не-хост только читает
-      if (!isHost) G.bullets = data.bullets;
-    }
-    // Обновляем лобби-список
+    if (data.bullets) G.bullets = { ...data.bullets };
+
+    // Список игроков
     const entries = Object.entries(G.players);
-    document.getElementById('player-count-badge').innerText = `${entries.length}/6`;
-    document.getElementById('player-list').innerHTML = entries.map(([id, p]) => `
-      <div class="pcard">
+    document.getElementById('player-count-badge').textContent = `${entries.length}/6`;
+    document.getElementById('player-list').innerHTML = entries.map(([id,p]) => `
+      <div class="pcard fade-in">
         <div class="dot" style="background:${p.color}"></div>
         <span style="font-weight:600;">${p.name}</span>
-        ${id === myId ? '<span class="tag tag-me">ВЫ</span>' : ''}
-        ${id === 'p1' ? '<span class="tag tag-host">👑 Учитель</span>' : ''}
-      </div>`).join('');
+        ${id===myId ? '<span class="tag tag-me">ВЫ</span>' : ''}
+        ${id==='p1' ? '<span class="tag tag-host">👑 Учитель</span>' : ''}
+      </div>
+    `).join('');
+
     if (isHost) {
       const btn = document.getElementById('btn-start-game');
       btn.disabled = entries.length < 2;
-      document.getElementById('lobby-status').innerText =
-        entries.length < 2
-          ? '⏳ Ждём хотя бы одного ученика...'
-          : `✅ Готово! ${entries.length} игроков`;
+      document.getElementById('lobby-status').textContent =
+        entries.length < 2 ? '⏳ Ждём хотя бы одного ученика...' : `✅ Готово! ${entries.length} игроков`;
     }
-    // Когда статус меняется на 'playing' — стартуем игру
+
+    // Старт
     if (data.status === 'playing' && !gameRunning) {
-      gameRunning = true;
+      gameRunning   = true;
+      gameOverShown = false;
+      G.particles   = [];
       showScreen('game');
       requestAnimationFrame(gameLoop);
     }
+
+    // Конец
+    if (data.status === 'ended' && !gameOverShown) {
+      showGameOver(data);
+    }
   });
 }
+
 document.getElementById('btn-start-game').onclick = () =>
-  update(roomRef, { status: 'playing' });
-// ================================================================
+  update(roomRef, { status:'playing' });
+
+// ═══════════════════════════════════════════════
 //  ИГРОВОЙ ЦИКЛ
-// ================================================================
-const canvas = document.getElementById('gameCanvas');
-const ctx    = canvas.getContext('2d');
-let lastHostTick = 0;
+// ═══════════════════════════════════════════════
 function gameLoop(ts) {
   if (!gameRunning) return;
   requestAnimationFrame(gameLoop);
-  handleInput();
+
+  // Все отправляют ввод
+  sendInput();
+
+  // Только хост обрабатывает физику
   if (isHost) hostTick(ts);
+
+  // Все обновляют частицы и рисуют
+  updateParticles();
   render();
 }
-// ── Ввод ────────────────────────────────────────────────────────
-function handleInput() {
-  const me = G.players[myId];
-  if (!me || me.dead) return;
-  let nx = me.x, ny = me.y, ndir = me.dir, moved = false;
-  if      (keys['ArrowUp']    || keys['KeyW']) { ny -= SPEED; ndir = 'up';    moved = true; }
-  else if (keys['ArrowDown']  || keys['KeyS']) { ny += SPEED; ndir = 'down';  moved = true; }
-  else if (keys['ArrowLeft']  || keys['KeyA']) { nx -= SPEED; ndir = 'left';  moved = true; }
-  else if (keys['ArrowRight'] || keys['KeyD']) { nx += SPEED; ndir = 'right'; moved = true; }
-  if (moved && !outBounds(nx, ny) && !hitsWall(nx, ny)) {
-    G.players[myId].x   = nx;   // предсказание на клиенте (плавно)
-    G.players[myId].y   = ny;
-    G.players[myId].dir = ndir;
-    update(ref(db, `rooms/${roomCode}/players/${myId}`), { x: nx, y: ny, dir: ndir });
-  }
-  // Стрельба
-  if (keys['Space'] && Date.now() - lastShot >= SHOOT_CD) {
-    lastShot = Date.now();
-    spawnBullet(myId, G.players[myId]);
-  }
-}
-function spawnBullet(ownerId, owner) {
-  if (!owner || owner.dead) return;
-  // Смещаем стартовую точку пули вперёд по направлению ствола
-  const off = HALF + 14;
-  let bx = owner.x, by = owner.y;
-  if      (owner.dir === 'up')    by -= off;
-  else if (owner.dir === 'down')  by += off;
-  else if (owner.dir === 'left')  bx -= off;
-  else                            bx += off;
-  const bRef   = push(ref(db, `rooms/${roomCode}/bullets`));
-  const bullet = { x: bx, y: by, dir: owner.dir, owner: ownerId };
-  G.bullets[bRef.key] = bullet;   // локально сразу — все видят без задержки
-  set(bRef, bullet);
-}
-// ================================================================
-//  ФИЗИКА ХОСТА (~30 тиков/с)
-//  Хост — единственный кто двигает пули и считает попадания.
-//  Все клиенты подтягивают пули из Firebase через onValue.
-// ================================================================
+
+// ═══════════════════════════════════════════════
+//  ФИЗИКА ХОСТА (30 тиков/с)
+//  Хост — ЕДИНСТВЕННЫЙ источник истины:
+//    1. Читает ввод из hostInput (заполняется через onValue)
+//    2. Двигает танки
+//    3. Создаёт пули
+//    4. Двигает пули, проверяет коллизии
+//    5. Обрабатывает возрождение
+//    6. Пишет всё в Firebase
+// ═══════════════════════════════════════════════
 function hostTick(ts) {
-  const TICK = 1000 / 30;          // 30 FPS физики
+  const TICK = 1000 / HOST_HZ;
   if (ts - lastHostTick < TICK) return;
   lastHostTick = ts;
-  const now       = Date.now();
-  const bUpdates  = {};            // что писать в bullets
-  const pUpdates  = {};            // что писать в players
-  const walls     = G.walls.map(w => ({ ...w }));   // локальная копия
-  let   wallsDirty = false;
-  // 1. Возрождение игроков
+
+  const now      = Date.now();
+  const pUpdates = {};
+  const bUpdates = {};
+  const walls    = G.walls.map(w => ({...w}));
+  let wallsDirty = false;
+
+  // ── 1. Двигаем танки + создаём пули ──
   for (const [pid, p] of Object.entries(G.players)) {
-    if (p.dead && p.lives > 0 && p.respawnAt && now >= p.respawnAt) {
-      const idx = parseInt(pid.replace('p','')) - 1;
-      const sp  = SPAWNS[idx < SPAWNS.length ? idx : 0];
-      const upd = { dead: false, hp: MAX_HP, x: sp.x, y: sp.y, dir: sp.dir, respawnAt: null };
-      Object.assign(G.players[pid], upd);
-      pUpdates[pid] = upd;
+    if (p.dead) continue;
+    const inp = hostInput[pid];
+    if (!inp) continue;
+
+    // Движение
+    let nx=p.x, ny=p.y, ndir=p.dir, moved=false;
+    if      (inp.keys.up)    { ny-=SPEED; ndir='up';    moved=true; }
+    else if (inp.keys.down)  { ny+=SPEED; ndir='down';  moved=true; }
+    else if (inp.keys.left)  { nx-=SPEED; ndir='left';  moved=true; }
+    else if (inp.keys.right) { nx+=SPEED; ndir='right'; moved=true; }
+
+    if (moved && !outBounds(nx,ny) && !hitsWall(nx,ny,walls)) {
+      pUpdates[pid] = { ...(pUpdates[pid]||{}), x:nx, y:ny, dir:ndir };
+    }
+
+    // Стрельба
+    if (inp.shoot && inp.shoot > (hostLastShoot[pid]||0)) {
+      hostLastShoot[pid] = inp.shoot;
+      const off = HALF + 14;
+      let bx=p.x, by=p.y;
+      if      (p.dir==='up')    by-=off;
+      else if (p.dir==='down')  by+=off;
+      else if (p.dir==='left')  bx-=off;
+      else                      bx+=off;
+      const bId = 'b'+now+'_'+pid+'_'+Math.random().toString(36).slice(2,6);
+      G.bullets[bId] = { x:bx, y:by, dir:p.dir, owner:pid };
+      bUpdates[bId]  = { x:bx, y:by, dir:p.dir, owner:pid };
     }
   }
-  // 2. Движение пуль и проверка столкновений
-  for (const [bId, b] of Object.entries(G.bullets)) {
-    let { x, y, dir, owner } = b;
-    // Двигаем пулю
-    if      (dir === 'up')    y -= BSPEED;
-    else if (dir === 'down')  y += BSPEED;
-    else if (dir === 'left')  x -= BSPEED;
-    else if (dir === 'right') x += BSPEED;
-    // Вылет за границу
-    if (x < 0 || x > W || y < 0 || y > H) {
-      bUpdates[bId] = null;
-      delete G.bullets[bId];
-      continue;
+
+  // ── 2. Возрождение ──
+  for (const [pid, p] of Object.entries(G.players)) {
+    if (p.dead && p.lives>0 && p.respawnAt && now >= p.respawnAt) {
+      const idx = parseInt(pid.replace('p','')) - 1;
+      const sp  = SPAWNS[idx < SPAWNS.length ? idx : 0];
+      pUpdates[pid] = { ...(pUpdates[pid]||{}),
+        dead:false, hp:MAX_HP, x:sp.x, y:sp.y, dir:sp.dir, respawnAt:null };
+      playSound('respawn');
     }
-    // Столкновение со стеной
+  }
+
+  // ── 3. Пули: движение + коллизии ──
+  for (const [bId, b] of Object.entries(G.bullets)) {
+    if (!b) continue;
+    let {x, y, dir, owner} = b;
+
+    // Двигаем
+    if      (dir==='up')    y-=BSPEED;
+    else if (dir==='down')  y+=BSPEED;
+    else if (dir==='left')  x-=BSPEED;
+    else                    x+=BSPEED;
+
+    // За границей
+    if (x<0||x>W||y<0||y>H) {
+      bUpdates[bId] = null; delete G.bullets[bId]; continue;
+    }
+
+    // Стена
     let hitWall = false;
-    for (let i = 0; i < walls.length; i++) {
+    for (let i=0; i<walls.length; i++) {
       const w = walls[i];
       if (!w) continue;
-      if (x > w.x + 3 && x < w.x + 37 && y > w.y + 3 && y < w.y + 37) {
-        if (w.hp < 99) {         // кирпич ломается
-          walls[i] = { ...w, hp: w.hp - 1 };
-          if (walls[i].hp <= 0) walls[i] = null;
+      if (x>w.x+3 && x<w.x+37 && y>w.y+3 && y<w.y+37) {
+        if (w.hp < 99) {
+          walls[i] = {...w, hp:w.hp-1};
+          if (walls[i].hp<=0) { spawnDebris(w.x,w.y); walls[i]=null; }
         }
-        // сталь (hp=99) пулю останавливает, но сама не разрушается
-        hitWall    = true;
-        wallsDirty = true;
-        break;
+        hitWall=true; wallsDirty=true; break;
       }
     }
     if (hitWall) {
-      bUpdates[bId] = null;
-      delete G.bullets[bId];
-      continue;
+      bUpdates[bId]=null; delete G.bullets[bId]; continue;
     }
-    // Столкновение с танком
-    let hitPlayer = false;
-    for (const [pid, p] of Object.entries(G.players)) {
-      if (pid === owner || p.dead) continue;
-      if (Math.hypot(p.x - x, p.y - y) < HALF + 6) {
-        hitPlayer = true;
-        const newHp = (p.hp || 1) - 1;
-        if (newHp <= 0) {
-          // Жизнь закончилась
-          const newLives = (p.lives || 1) - 1;
-          const upd = newLives > 0
-            ? { hp: 0, lives: newLives, dead: true,  respawnAt: now + RESPAWN_MS }
-            : { hp: 0, lives: 0,        dead: true,  respawnAt: null };
-          Object.assign(G.players[pid], upd);
-          pUpdates[pid] = upd;
-          // +1 очко стрелку
-          const shooter = G.players[owner];
-          if (shooter) {
-            const ns = (shooter.score || 0) + 1;
-            G.players[owner].score    = ns;
-            pUpdates[owner] = { ...(pUpdates[owner] || {}), score: ns };
-          }
-        } else {
-          G.players[pid].hp = newHp;
-          pUpdates[pid] = { ...(pUpdates[pid] || {}), hp: newHp };
+
+    // Танк
+    const hitPid = hitsTank(x,y,owner,G.players);
+    if (hitPid) {
+      const t    = G.players[hitPid];
+      const newHp = (t.hp||1) - 1;
+      if (newHp <= 0) {
+        const nl = (t.lives||1) - 1;
+        pUpdates[hitPid] = { ...(pUpdates[hitPid]||{}),
+          hp:0, lives:nl, dead:true, respawnAt: nl>0 ? now+RESPAWN_MS : null };
+        const sh = G.players[owner];
+        if (sh) {
+          const ns = (sh.score||0)+1;
+          pUpdates[owner] = { ...(pUpdates[owner]||{}), score:ns };
         }
-        break;
+        spawnExplosion(t.x, t.y, t.color, 25);
+        playSound('explode');
+      } else {
+        pUpdates[hitPid] = { ...(pUpdates[hitPid]||{}), hp:newHp };
+        spawnExplosion(x, y, '#fef9c3', 8);
+        playSound('hit');
       }
+      bUpdates[bId]=null; delete G.bullets[bId]; continue;
     }
-    if (hitPlayer) {
-      bUpdates[bId] = null;
-      delete G.bullets[bId];
-      continue;
-    }
-    // Пуля летит дальше — обновляем позицию
-    const moved = { ...b, x, y };
-    G.bullets[bId] = moved;
-    bUpdates[bId]  = moved;
+
+    // Летит дальше
+    G.bullets[bId] = {...b, x, y};
+    bUpdates[bId]  = {...b, x, y};
   }
-  // 3. Пишем изменения в Firebase одним batch
-  if (Object.keys(bUpdates).length)
-    update(ref(db, `rooms/${roomCode}/bullets`), bUpdates);
+
+  // ── 4. Пишем в Firebase ──
   if (Object.keys(pUpdates).length)
     update(ref(db, `rooms/${roomCode}/players`), pUpdates);
+  if (Object.keys(bUpdates).length)
+    update(ref(db, `rooms/${roomCode}/bullets`), bUpdates);
   if (wallsDirty) {
-    const cleaned = walls.filter(Boolean);
-    G.walls = cleaned;
-    set(ref(db, `rooms/${roomCode}/walls`), cleaned);
+    G.walls = walls.filter(Boolean);
+    set(ref(db, `rooms/${roomCode}/walls`), G.walls);
   }
+
+  // ── 5. Конец игры ──
+  checkEndGameHost();
 }
-// ================================================================
+
+function checkEndGameHost() {
+  const all   = Object.values(G.players);
+  if (all.length < 2) return;
+  const alive = all.filter(p => p.lives > 0);
+  if (alive.length > 1) return;
+  gameRunning   = false;
+  gameOverShown = true;
+  const winner = alive[0] || null;
+  update(roomRef, { status:'ended', winner: winner?winner.name:null });
+}
+
+// ═══════════════════════════════════════════════
+//  КОНЕЦ ИГРЫ
+// ═══════════════════════════════════════════════
+function showGameOver(data) {
+  gameOverShown = true;
+  gameRunning   = false;
+  const wn   = data.winner;
+  const all  = Object.values(G.players);
+  const isWin = wn && wn === myName;
+  document.getElementById('overlay-icon').textContent    = isWin ? '🏆' : '💀';
+  document.getElementById('overlay-title').textContent   = isWin ? 'ПОБЕДА!' : 'КОНЕЦ БОЯ';
+  document.getElementById('overlay-winner').textContent  = wn ? `Победитель: ${wn}` : 'Все выбыли — ничья!';
+  document.getElementById('overlay-scores').innerHTML    =
+    all.sort((a,b)=>(b.score||0)-(a.score||0)).map(p=>`${p.name}: ${p.score||0} очков`).join('<br>');
+  document.getElementById('game-overlay').classList.add('show');
+  if (isHost) setTimeout(() => set(roomRef, null), 60000);
+}
+
+document.getElementById('btn-menu').onclick = () => location.reload();
+
+// ═══════════════════════════════════════════════
 //  РЕНДЕРИНГ
-// ================================================================
+// ═══════════════════════════════════════════════
 function render() {
   ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0,0,W,H);
+
   // Сетка
-  ctx.strokeStyle = '#1a2640';
-  ctx.lineWidth = 1;
-  for (let x = 0; x <= W; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-  }
-  for (let y = 0; y <= H; y += 40) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  }
+  ctx.strokeStyle = '#1a2640'; ctx.lineWidth = 1;
+  for (let x=0;x<=W;x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y=0;y<=H;y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
   drawWalls();
   drawTanks();
   drawBullets();
+  drawParticles();
   updateHUD();
-  checkEndGame();
 }
+
 function drawWalls() {
   for (const w of G.walls) {
     if (!w) continue;
     const steel = w.hp >= 99;
     if (steel) {
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(w.x+2, w.y+2, 36, 36);
-      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
-      ctx.strokeRect(w.x+2, w.y+2, 36, 36);
-      ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(w.x+8, w.y+8); ctx.lineTo(w.x+32, w.y+32); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+32,w.y+8); ctx.lineTo(w.x+8, w.y+32); ctx.stroke();
+      ctx.fillStyle='#334155'; ctx.fillRect(w.x+2,w.y+2,36,36);
+      ctx.strokeStyle='#475569'; ctx.lineWidth=2; ctx.strokeRect(w.x+2,w.y+2,36,36);
+      ctx.strokeStyle='#4b5563'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(w.x+8,w.y+8); ctx.lineTo(w.x+32,w.y+32); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+32,w.y+8); ctx.lineTo(w.x+8,w.y+32); ctx.stroke();
     } else {
-      const dmg = 1 - w.hp / w.maxHp;
-      const r = Math.round(160 - dmg*60), g2 = Math.round(50 - dmg*20), b = Math.round(20 - dmg*10);
-      ctx.fillStyle = `rgb(${r},${g2},${b})`;
-      ctx.fillRect(w.x+2, w.y+2, 36, 36);
-      ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1;
-      ctx.strokeRect(w.x+2, w.y+2, 36, 36);
-      ctx.beginPath(); ctx.moveTo(w.x+2, w.y+21); ctx.lineTo(w.x+38, w.y+21); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+21, w.y+2);  ctx.lineTo(w.x+21, w.y+21); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+11, w.y+21); ctx.lineTo(w.x+11, w.y+38); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+31, w.y+21); ctx.lineTo(w.x+31, w.y+38); ctx.stroke();
+      const dmg = 1 - w.hp/w.maxHp;
+      const r=Math.round(160-dmg*60), g=Math.round(50-dmg*20), b=Math.round(20-dmg*10);
+      ctx.fillStyle=`rgb(${r},${g},${b})`; ctx.fillRect(w.x+2,w.y+2,36,36);
+      ctx.strokeStyle='#7c2d12'; ctx.lineWidth=1; ctx.strokeRect(w.x+2,w.y+2,36,36);
+      ctx.beginPath(); ctx.moveTo(w.x+2,w.y+21); ctx.lineTo(w.x+38,w.y+21); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+21,w.y+2); ctx.lineTo(w.x+21,w.y+21); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+11,w.y+21); ctx.lineTo(w.x+11,w.y+38); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+31,w.y+21); ctx.lineTo(w.x+31,w.y+38); ctx.stroke();
     }
   }
 }
+
 function drawTanks() {
   for (const [id, p] of Object.entries(G.players)) {
+    // МЁРТВЫЕ НЕ РИСУЮТСЯ — это решает проблему «серого прямоугольника»
     if (p.dead) continue;
-    const { x, y, dir, color, hp } = p;
-    const S   = HALF;
-    const isMe = id === myId;
+
+    const {x,y,dir,color,hp} = p;
+    const S = HALF, isMe = id===myId;
+
     // Тень
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.fillRect(x-S+4, y-S+4, S*2, S*2);
+    ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.fillRect(x-S+4,y-S+4,S*2,S*2);
+
     // Гусеницы
-    ctx.fillStyle = '#374151';
-    if (dir === 'up' || dir === 'down') {
-      ctx.fillRect(x-S-5, y-S, 8, S*2);
-      ctx.fillRect(x+S-3, y-S, 8, S*2);
+    ctx.fillStyle='#374151';
+    if (dir==='up'||dir==='down') {
+      ctx.fillRect(x-S-5,y-S,8,S*2); ctx.fillRect(x+S-3,y-S,8,S*2);
     } else {
-      ctx.fillRect(x-S, y-S-5, S*2, 8);
-      ctx.fillRect(x-S, y+S-3, S*2, 8);
+      ctx.fillRect(x-S,y-S-5,S*2,8); ctx.fillRect(x-S,y+S-3,S*2,8);
     }
+
     // Корпус
-    ctx.fillStyle = color;
-    ctx.fillRect(x-S, y-S, S*2, S*2);
+    ctx.fillStyle=color; ctx.fillRect(x-S,y-S,S*2,S*2);
+
     // Башня
-    ctx.fillStyle = shadeHex(color, -30);
-    ctx.beginPath(); ctx.arc(x, y, S*0.54, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle=shadeHex(color,-30);
+    ctx.beginPath(); ctx.arc(x,y,S*0.54,0,Math.PI*2); ctx.fill();
+
     // Ствол
-    ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-    const gl = S + 13;
-    ctx.beginPath();
-    if      (dir === 'up')    { ctx.moveTo(x, y); ctx.lineTo(x,    y-gl); }
-    else if (dir === 'down')  { ctx.moveTo(x, y); ctx.lineTo(x,    y+gl); }
-    else if (dir === 'left')  { ctx.moveTo(x, y); ctx.lineTo(x-gl, y);    }
-    else                      { ctx.moveTo(x, y); ctx.lineTo(x+gl, y);    }
+    ctx.strokeStyle='#d1d5db'; ctx.lineWidth=5; ctx.lineCap='round';
+    const gl=S+13; ctx.beginPath();
+    if      (dir==='up')    { ctx.moveTo(x,y); ctx.lineTo(x,y-gl); }
+    else if (dir==='down')  { ctx.moveTo(x,y); ctx.lineTo(x,y+gl); }
+    else if (dir==='left')  { ctx.moveTo(x,y); ctx.lineTo(x-gl,y); }
+    else                    { ctx.moveTo(x,y); ctx.lineTo(x+gl,y); }
     ctx.stroke();
+
     // Рамка своего танка
     if (isMe) {
-      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
-      ctx.setLineDash([5, 3]);
-      ctx.strokeRect(x-S-2, y-S-2, S*2+4, S*2+4);
+      ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2;
+      ctx.setLineDash([5,3]); ctx.strokeRect(x-S-2,y-S-2,S*2+4,S*2+4);
       ctx.setLineDash([]);
     }
+
     // HP-полоска
-    const bw = S*2;
-    ctx.fillStyle = '#1f2937'; ctx.fillRect(x-S, y-S-11, bw, 6);
-    ctx.fillStyle = hp >= MAX_HP ? '#22c55e' : hp >= 2 ? '#eab308' : '#ef4444';
-    ctx.fillRect(x-S, y-S-11, bw*(hp/MAX_HP), 6);
+    const bw=S*2;
+    ctx.fillStyle='#1f2937'; ctx.fillRect(x-S,y-S-11,bw,6);
+    ctx.fillStyle=hp>=MAX_HP?'#22c55e':hp>=2?'#eab308':'#ef4444';
+    ctx.fillRect(x-S,y-S-11,bw*(hp/MAX_HP),6);
+
     // Имя
-    ctx.fillStyle   = isMe ? '#fde68a' : '#f1f5f9';
-    ctx.font        = 'bold 11px Segoe UI';
-    ctx.textAlign   = 'center';
-    ctx.shadowColor = '#000'; ctx.shadowBlur = 5;
+    ctx.fillStyle=isMe?'#fde68a':'#f1f5f9';
+    ctx.font='bold 11px Segoe UI'; ctx.textAlign='center';
+    ctx.shadowColor='#000'; ctx.shadowBlur=5;
     ctx.fillText(p.name, x, y-S-17);
-    ctx.shadowBlur = 0;
+    ctx.shadowBlur=0;
   }
 }
+
 function drawBullets() {
   for (const b of Object.values(G.bullets)) {
     if (!b) continue;
     const col = G.players[b.owner]?.color || '#fbbf24';
     // Хвост
-    ctx.strokeStyle = col + '66'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-    const tl = 14;
-    ctx.beginPath();
-    if      (b.dir === 'up')    { ctx.moveTo(b.x, b.y+tl); ctx.lineTo(b.x, b.y); }
-    else if (b.dir === 'down')  { ctx.moveTo(b.x, b.y-tl); ctx.lineTo(b.x, b.y); }
-    else if (b.dir === 'left')  { ctx.moveTo(b.x+tl, b.y); ctx.lineTo(b.x, b.y); }
-    else                        { ctx.moveTo(b.x-tl, b.y); ctx.lineTo(b.x, b.y); }
+    ctx.strokeStyle=col+'66'; ctx.lineWidth=3; ctx.lineCap='round';
+    const tl=14; ctx.beginPath();
+    if      (b.dir==='up')    { ctx.moveTo(b.x,b.y+tl); ctx.lineTo(b.x,b.y); }
+    else if (b.dir==='down')  { ctx.moveTo(b.x,b.y-tl); ctx.lineTo(b.x,b.y); }
+    else if (b.dir==='left')  { ctx.moveTo(b.x+tl,b.y); ctx.lineTo(b.x,b.y); }
+    else                      { ctx.moveTo(b.x-tl,b.y); ctx.lineTo(b.x,b.y); }
     ctx.stroke();
-    // Ядро со свечением
-    ctx.shadowBlur = 14; ctx.shadowColor = col;
-    ctx.fillStyle  = '#fef9c3';
-    ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur = 0;
+    // Ядро
+    ctx.shadowBlur=14; ctx.shadowColor=col;
+    ctx.fillStyle='#fef9c3'; ctx.beginPath(); ctx.arc(b.x,b.y,5,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
   }
 }
+
+function drawParticles() {
+  for (const p of G.particles) {
+    const a = p.life/p.maxLife;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size*a, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
 function shadeHex(hex, amt) {
-  const n = parseInt(hex.replace('#',''), 16);
-  const r = Math.max(0, Math.min(255, (n >> 16) + amt));
-  const g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
-  const b = Math.max(0, Math.min(255, (n & 0xff) + amt));
+  const n = parseInt(hex.replace('#',''),16);
+  const r=Math.max(0,Math.min(255,(n>>16)+amt));
+  const g=Math.max(0,Math.min(255,((n>>8)&0xff)+amt));
+  const b=Math.max(0,Math.min(255,(n&0xff)+amt));
   return `rgb(${r},${g},${b})`;
 }
-// ── HUD (за пределами canvas) ───────────────────────────────────
+
+// ═══════════════════════════════════════════════
+//  HUD
+// ═══════════════════════════════════════════════
 function updateHUD() {
   const me = G.players[myId];
   if (!me) return;
-  // Жизни
-  const h = '❤️'.repeat(Math.max(0, me.lives)) + '🖤'.repeat(Math.max(0, MAX_LIVES - me.lives));
-  document.getElementById('ui-lives').innerHTML = h;
-  // Счёт
-  const sorted = Object.values(G.players).sort((a,b) => (b.score||0) - (a.score||0));
+
+  document.getElementById('ui-lives').innerHTML =
+    '❤️'.repeat(Math.max(0,me.lives)) + '🖤'.repeat(Math.max(0,MAX_LIVES-me.lives));
+
+  const sorted = Object.values(G.players).sort((a,b)=>(b.score||0)-(a.score||0));
   document.getElementById('ui-scores').innerHTML = sorted.map(p =>
     `<span style="color:${p.color};font-weight:${p.name===myName?900:500};">
       ${p.name}: ${p.score||0}${p.lives<=0?' 💀':''}
     </span>`
   ).join('');
-  // Таймер возрождения
+
   const bar = document.getElementById('respawn-bar');
-  if (me.dead && me.lives > 0 && me.respawnAt) {
-    const sec = Math.ceil((me.respawnAt - Date.now()) / 1000);
-    document.getElementById('respawn-timer').innerText = Math.max(0, sec);
+  if (me.dead && me.lives>0 && me.respawnAt) {
+    document.getElementById('respawn-timer').textContent =
+      Math.max(0, Math.ceil((me.respawnAt-Date.now())/1000));
     bar.classList.add('show');
   } else {
     bar.classList.remove('show');
   }
 }
-// ── Конец игры ───────────────────────────────────────────────────
-function checkEndGame() {
-  if (gameOverShown) return;
-  const all   = Object.values(G.players);
-  if (all.length < 2) return;
-  const alive = all.filter(p => p.lives > 0);
-  if (alive.length > 1) return;
-  gameOverShown = true;
-  gameRunning   = false;
-  const winner = alive[0] || null;
-  const isWin  = winner && winner.name === myName;
-  document.getElementById('overlay-icon').innerText    = isWin ? '🏆' : '💀';
-  document.getElementById('overlay-title').innerText   = isWin ? 'ПОБЕДА!' : 'КОНЕЦ БОЯ';
-  document.getElementById('overlay-winner').innerText  =
-    winner ? `Победитель: ${winner.name}` : 'Все выбыли — ничья!';
-  document.getElementById('overlay-scores').innerHTML  =
-    all.sort((a,b) => (b.score||0) - (a.score||0))
-       .map(p => `${p.name}: ${p.score||0} очков`).join('<br>');
-  document.getElementById('game-overlay').classList.add('show');
-  if (isHost) setTimeout(() => set(roomRef, null), 60000);
-}
+
+// ═══════════════════════════════════════════════
+//  СТАРТ
+// ═══════════════════════════════════════════════
+document.getElementById('player-name').focus();
+console.log('🎮 Танки Онлайн v2 загружены!');
 </script>
 </body>
 </html>
