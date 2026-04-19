@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн — School Edition v3</title>
+  <title>Танки Онлайн — School Edition v3.1</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -164,14 +164,13 @@ import { getDatabase, ref, set, get, onValue, update, onDisconnect }
 //  FIREBASE CONFIG
 // ══════════════════════════════════════════════
 const firebaseConfig = {
-  apiKey: "AIzaSyBtZHdsONjUjFjvVec7vTsjMoVTIKtsx0s",
-  authDomain: "tanki-online-algo.firebaseapp.com",
-  databaseURL:       "https://tanki-online-algo-default-rtdb.europe-west1.firebasedatabase.app/",
-  projectId: "tanki-online-algo",
-  storageBucket: "tanki-online-algo.firebasestorage.app",
-  messagingSenderId: "790323345404",
-  appId: "1:790323345404:web:2b7540ca84c5977aa9a479",
-  measurementId: "G-5WTXB7GLPX"
+  apiKey:            "AIzaSyAO-BLP_0IztO6f7tneV0U3RUaGAldVbt4",
+  authDomain:        "tanks-algo.firebaseapp.com",
+  databaseURL:       "https://tanks-algo-default-rtdb.firebaseio.com",
+  projectId:         "tanks-algo",
+  storageBucket:     "tanks-algo.firebasestorage.app",
+  messagingSenderId: "1030648027213",
+  appId:             "1:1030648027213:web:c99277654cc47721786404"
 };
 const fbApp = initializeApp(firebaseConfig);
 const db    = getDatabase(fbApp);
@@ -295,8 +294,8 @@ function generateWalls() {
     const j = Math.floor(Math.random()*(i+1));
     [cells[i], cells[j]] = [cells[j], cells[i]];
   }
-  return cells.slice(0, 46).map(c => {
-    const steel = Math.random() < 0.33;
+  return cells.slice(0, 50).map(c => { // Увеличено количество препятствий до 50
+    const steel = Math.random() < 0.22;
     return { x:c.x, y:c.y, hp: steel?99:1, maxHp: steel?99:1 };
   });
 }
@@ -583,11 +582,12 @@ function hostTick(ts) {
     const inp = hostInput[pid];
     if (!inp) continue;
 
+    const pSpeed = (pid === 'p1') ? SPEED : SPEED * 1.25; // Ученики (не p1) двигаются на 25% быстрее
     let nx = p.x, ny = p.y, ndir = p.dir, moved = false;
-    if      (inp.u) { ny -= SPEED; ndir = 'up';    moved = true; }
-    else if (inp.d) { ny += SPEED; ndir = 'down';  moved = true; }
-    else if (inp.l) { nx -= SPEED; ndir = 'left';  moved = true; }
-    else if (inp.r) { nx += SPEED; ndir = 'right'; moved = true; }
+    if      (inp.u) { ny -= pSpeed; ndir = 'up';    moved = true; }
+    else if (inp.d) { ny += pSpeed; ndir = 'down';  moved = true; }
+    else if (inp.l) { nx -= pSpeed; ndir = 'left';  moved = true; }
+    else if (inp.r) { nx += pSpeed; ndir = 'right'; moved = true; }
 
     if (moved && !outBounds(nx, ny) && !hitsWall(nx, ny)) {
       p.x = nx; p.y = ny; p.dir = ndir;
@@ -638,10 +638,11 @@ function hostTick(ts) {
     if (!b) { bulletsToDelete.push(bId); continue; }
 
     let { x, y, dir, owner } = b;
-    if      (dir === 'up')    y -= BSPEED;
-    else if (dir === 'down')  y += BSPEED;
-    else if (dir === 'left')  x -= BSPEED;
-    else                      x += BSPEED;
+    const bSpeed = (owner === 'p1') ? BSPEED : BSPEED * 1.35; // Снаряды учеников на 35% быстрее
+    if      (dir === 'up')    y -= bSpeed;
+    else if (dir === 'down')  y += bSpeed;
+    else if (dir === 'left')  x -= bSpeed;
+    else                      x += bSpeed;
 
     // Out of bounds
     if (x < 0 || x > W || y < 0 || y > H) {
