@@ -3,413 +3,726 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Battle City Online - Pro Edition</title>
-  <!-- Подключаем Tailwind CSS для современного дизайна без установки -->
+  <title>Танки Онлайн — School Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-    body { background-color: #0f172a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
-    .retro-font { font-family: 'Press Start 2P', cursive; }
-    canvas { image-rendering: pixelated; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(ellipse at 50% 30%, #1a2035 0%, #0a0f1e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+    .retro { font-family: 'Press Start 2P', cursive; }
     .screen { display: none; }
     .screen.active { display: flex; }
-    .overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
+    .card {
+      background: rgba(15, 23, 42, 0.97);
+      border: 1px solid #1e3a5f;
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+      padding: 36px;
+      max-width: 420px;
+      width: 100%;
+    }
+    .btn {
+      width: 100%; padding: 14px 20px; border-radius: 14px;
+      font-weight: 700; font-size: 15px; border: none; cursor: pointer;
+      transition: all 0.18s; color: white;
+    }
+    .btn:hover:not(:disabled)  { transform: translateY(-2px); filter: brightness(1.15); }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; background: #374151 !important; }
+    .btn-green  { background: linear-gradient(135deg, #059669, #10b981); }
+    .btn-blue   { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .btn-orange { background: linear-gradient(135deg, #ea580c, #f97316); }
+    .inp {
+      width: 100%; padding: 13px 16px;
+      background: rgba(0,0,0,0.4); border: 2px solid #1e3a5f;
+      border-radius: 12px; color: white; font-size: 16px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .inp:focus        { border-color: #f97316; }
+    .inp::placeholder { color: #475569; }
+    @keyframes glow {
+      0%,100% { text-shadow: 0 0 8px #f97316; }
+      50%      { text-shadow: 0 0 28px #f97316, 0 0 56px #f97316aa; }
+    }
+    .glow { animation: glow 2.5s ease-in-out infinite; }
+    .pcard {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; background: rgba(0,0,0,0.35);
+      border: 1px solid #1e3a5f; border-radius: 12px;
+    }
+    .dot  { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .tag  { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .tag-me   { background: #78350f; color: #fbbf24; }
+    .tag-host { background: #14532d; color: #4ade80; }
+    canvas {
+      display: block; border-radius: 12px;
+      border: 3px solid #1e3a5f;
+      box-shadow: 0 0 50px rgba(0,0,0,0.6);
+      background: #0f172a;
+    }
+    #scoreboard {
+      max-width: 800px; width: 100%;
+      background: rgba(0,0,0,0.55); border: 1px solid #1e3a5f;
+      border-radius: 12px; padding: 8px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap;
+    }
+    #game-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(8px);
+      border-radius: 12px; display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 40px; z-index: 10;
+    }
+    #game-overlay.show { display: flex; }
+    #respawn-bar {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); border: 1px solid #f97316;
+      border-radius: 30px; padding: 7px 22px; font-size: 13px; color: #fbbf24;
+      display: none; white-space: nowrap; z-index: 5;
+    }
+    #respawn-bar.show { display: block; }
+    #auth-error {
+      background: #7f1d1d; border: 1px solid #ef4444;
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; color: #fca5a5; display: none;
+    }
+    #auth-error.show { display: block; }
   </style>
 </head>
-<body class="h-screen w-screen flex items-center justify-center">
-
-  <!-- ЭКРАН 1: ВХОД И ИМЯ -->
-  <div id="screen-auth" class="screen active flex-col items-center gap-6 p-8 bg-slate-800 rounded-2xl shadow-2xl border-2 border-slate-700 max-w-md w-full">
-    <h1 class="retro-font text-orange-500 text-2xl text-center mb-4 leading-relaxed">БИТВА ТАНКОВ</h1>
-    <input type="text" id="player-name" placeholder="Ваше имя..." class="w-full p-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-white text-center focus:border-orange-500 outline-none transition-all">
-    <div class="flex flex-col w-full gap-3">
-      <button id="btn-create" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105">Создать комнату (Учитель)</button>
-      <div class="flex gap-2">
-        <input type="text" id="room-code-input" placeholder="Код" maxlength="5" class="w-1/3 p-3 bg-slate-900 border-2 border-slate-600 rounded-lg text-center uppercase font-bold outline-none focus:border-blue-500">
-        <button id="btn-join" class="w-2/3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105">Присоединиться</button>
+<body>
+<!-- ЭКРАН ВХОДА -->
+<div id="screen-auth" class="screen active">
+  <div class="card">
+    <div style="text-align:center; margin-bottom:24px;">
+      <div style="display:inline-block;background:linear-gradient(135deg,#ea580c,#f97316);
+                  padding:14px;border-radius:16px;margin-bottom:14px;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="white">
+          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10
+                   3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+        </svg>
       </div>
+      <h1 class="retro" style="color:#f97316;font-size:13px;line-height:2;margin-bottom:6px;">
+        ТАНКИ ОНЛАЙН
+      </h1>
+      <p style="color:#475569;font-size:13px;">Школьная аркада • 2–6 игроков</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input class="inp" type="text" id="player-name"
+             placeholder="Введите ваше имя..." maxlength="12">
+      <button class="btn btn-green" id="btn-create">🎓 Создать комнату (Учитель)</button>
+      <div style="display:flex;gap:8px;align-items:stretch;">
+        <input class="inp" type="text" id="room-code-input" placeholder="КОД" maxlength="5"
+               style="width:120px;text-align:center;text-transform:uppercase;
+                      font-size:20px;font-weight:900;letter-spacing:4px;">
+        <button class="btn btn-blue" id="btn-join" style="flex:1;">🎮 Войти</button>
+      </div>
+      <div id="auth-error"></div>
     </div>
   </div>
-
-  <!-- ЭКРАН 2: ЛОББИ -->
-  <div id="screen-lobby" class="screen flex-col items-center gap-6 p-8 bg-slate-800 rounded-2xl shadow-2xl border-2 border-slate-700 max-w-md w-full">
-    <h2 class="retro-font text-xl text-center">ЛОББИ</h2>
-    <div class="text-center">
-      <p class="text-slate-400 mb-1">Код комнаты:</p>
-      <div id="display-room-code" class="text-4xl font-bold text-green-400 tracking-widest">-----</div>
+</div>
+<!-- ЭКРАН ЛОББИ -->
+<div id="screen-lobby" class="screen">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:20px;">
+      <p style="color:#64748b;font-size:11px;letter-spacing:3px;margin-bottom:6px;">КОД КОМНАТЫ</p>
+      <div id="display-room-code" class="retro glow"
+           style="color:#f97316;font-size:32px;letter-spacing:10px;">-----</div>
+      <p style="color:#64748b;font-size:11px;margin-top:6px;">Назовите этот код ученикам</p>
     </div>
-    
-    <div class="w-full">
-      <p class="text-slate-400 mb-3 text-center">Игроки (<span id="player-count">0</span>/6):</p>
-      <ul id="player-list" class="space-y-2 max-h-48 overflow-y-auto pr-2">
-        <!-- Сюда будут добавляться игроки -->
-      </ul>
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
+          Игроки
+        </span>
+        <span id="player-count-badge"
+              style="background:#1e3a5f;color:#60a5fa;font-size:11px;
+                     font-weight:700;padding:2px 10px;border-radius:20px;">0/6</span>
+      </div>
+      <div id="player-list" style="display:flex;flex-direction:column;gap:8px;
+                                   max-height:220px;overflow-y:auto;"></div>
     </div>
-
-    <button id="btn-start-game" disabled class="w-full bg-orange-600 disabled:bg-slate-600 disabled:opacity-50 hover:bg-orange-500 text-white font-bold py-4 rounded-xl transition-all text-lg uppercase">Начать бой!</button>
-  </div>
-
-  <!-- ЭКРАН 3: ИГРА -->
-  <div id="screen-game" class="screen flex-col items-center relative">
-    <canvas id="gameCanvas" width="800" height="600" class="rounded-lg border-4 border-slate-600 bg-black"></canvas>
-    <div class="mt-4 text-slate-400 text-sm flex gap-6">
-      <span><b class="text-white">WASD / Стрелки</b> — Движение</span>
-      <span><b class="text-white">Пробел</b> — Огонь</span>
+    <div id="lobby-status" style="color:#64748b;font-size:13px;text-align:center;margin-bottom:12px;"></div>
+    <div id="host-controls" style="display:none;">
+      <button class="btn btn-orange" id="btn-start-game" disabled>⚔️ Начать бой!</button>
+      <p style="color:#475569;font-size:11px;text-align:center;margin-top:8px;">Минимум 2 игрока</p>
     </div>
-    
-    <!-- Оверлей победы/поражения -->
-    <div id="game-overlay" class="hidden absolute inset-0 overlay rounded-lg flex flex-col items-center justify-center text-center p-6">
-      <div id="overlay-icon" class="text-6xl mb-4">🏆</div>
-      <h2 id="overlay-title" class="retro-font text-3xl mb-2">ПОБЕДА!</h2>
-      <p id="overlay-message" class="text-xl mb-8 text-slate-300">Вы уничтожили всех врагов</p>
-      <button onclick="location.reload()" class="bg-white text-black font-bold py-2 px-6 rounded-full hover:bg-slate-200 transition-all">В меню</button>
+    <div id="student-wait" style="display:none;text-align:center;padding:10px 0;">
+      <div style="font-size:28px;margin-bottom:8px;">⏳</div>
+      <p style="font-weight:700;color:#e2e8f0;">Ждём учителя...</p>
+      <p style="color:#475569;font-size:12px;margin-top:4px;">Игра начнётся автоматически</p>
     </div>
   </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update, remove, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
-    // =========================================================================
-    // 1. НАСТРОЙКИ FIREBASE (ВСТАВЬТЕ СВОИ ДАННЫЕ СЮДА)
-    // =========================================================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyAO-BLP_0IztO6f7tneV0U3RUaGAldVbt4",
-      authDomain: "tanks-algo.firebaseapp.com",
-      projectId: "tanks-algo",
-      databaseURL: "https://tanks-algo-default-rtdb.firebaseio.com/",
-      storageBucket: "tanks-algo.firebasestorage.app",
-      messagingSenderId: "1030648027213",
-      appId: "1:1030648027213:web:c99277654cc47721786404",
-      measurementId: "G-YN0JNNKMQ3"
-    };
-    // =========================================================================
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Состояние игры
-    let myId = null;
-    let myName = "";
-    let roomCode = null;
-    let isHost = false;
-    let gameRunning = false;
-    let roomRef = null;
-    const state = { players: {}, bullets: {}, walls: [] };
-
-    // Элементы интерфейса
-    const screens = {
-      auth: document.getElementById('screen-auth'),
-      lobby: document.getElementById('screen-lobby'),
-      game: document.getElementById('screen-game')
-    };
-
-    function showScreen(name) {
-      Object.values(screens).forEach(s => s.classList.remove('active'));
-      screens[name].classList.add('active');
+</div>
+<!-- ЭКРАН ИГРЫ -->
+<div id="screen-game" class="screen" style="flex-direction:column;gap:10px;align-items:center;">
+  <div id="scoreboard">
+    <div style="font-size:12px;color:#64748b;">
+      Комната: <span id="ui-room" style="color:#f97316;font-weight:700;"></span>
+    </div>
+    <div id="ui-scores" style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;"></div>
+    <div style="font-size:14px;" id="ui-lives"></div>
+  </div>
+  <div style="position:relative;">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="game-overlay">
+      <div id="overlay-icon" style="font-size:72px;margin-bottom:16px;filter:drop-shadow(0 0 20px gold);">🏆</div>
+      <h2 id="overlay-title" class="retro" style="font-size:20px;margin-bottom:12px;">ПОБЕДА!</h2>
+      <p id="overlay-winner" style="font-size:20px;color:#fbbf24;font-weight:700;margin-bottom:8px;"></p>
+      <div id="overlay-scores" style="color:#94a3b8;font-size:13px;margin-bottom:28px;line-height:1.8;"></div>
+      <button class="btn btn-orange" onclick="location.reload()"
+              style="width:auto;padding:12px 40px;font-size:15px;">🏠 В меню</button>
+    </div>
+    <div id="respawn-bar">
+      💀 Вы погибли! Возрождение через <strong id="respawn-timer">3</strong>с...
+    </div>
+  </div>
+  <p style="color:#334155;font-size:11px;">
+    WASD / Стрелки — движение &nbsp;|&nbsp; Пробел — огонь
+  </p>
+</div>
+<script type="module">
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, push, onDisconnect }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+// ================================================================
+//  КОНФИГ FIREBASE
+// ================================================================
+const firebaseConfig = {
+  apiKey:            "AIzaSyAO-BLP_0IztO6f7tneV0U3RUaGAldVbt4",
+  authDomain:        "tanks-algo.firebaseapp.com",
+  databaseURL:       "https://tanks-algo-default-rtdb.firebaseio.com",
+  projectId:         "tanks-algo",
+  storageBucket:     "tanks-algo.firebasestorage.app",
+  messagingSenderId: "1030648027213",
+  appId:             "1:1030648027213:web:c99277654cc47721786404"
+};
+// ================================================================
+const fbApp = initializeApp(firebaseConfig);
+const db    = getDatabase(fbApp);
+// ── Константы ───────────────────────────────────────────────────
+const W          = 800;
+const H          = 600;
+const HALF       = 18;      // полуразмер танка в пикселях
+const SPEED      = 3;       // скорость танка
+const BSPEED     = 9;       // скорость пули
+const SHOOT_CD   = 500;     // кулдаун стрельбы, мс
+const MAX_HP     = 3;       // HP за одну жизнь (3 попадания убивают)
+const MAX_LIVES  = 3;       // всего жизней у игрока
+const RESPAWN_MS = 3000;    // задержка перед возрождением
+// 6 уникальных стартовых позиций (углы + середины краёв)
+const SPAWNS = [
+  { x:  60, y:  60, dir: 'right' },
+  { x: 740, y: 540, dir: 'left'  },
+  { x: 740, y:  60, dir: 'left'  },
+  { x:  60, y: 540, dir: 'right' },
+  { x: 400, y:  45, dir: 'down'  },
+  { x: 400, y: 555, dir: 'up'    },
+];
+const COLORS = ['#22c55e','#ef4444','#3b82f6','#eab308','#a855f7','#f97316'];
+// ── Состояние ───────────────────────────────────────────────────
+let myId          = null;
+let myName        = '';
+let roomCode      = null;
+let isHost        = false;
+let gameRunning   = false;
+let gameOverShown = false;
+let roomRef       = null;
+let lastShot      = 0;
+// Локальная копия данных из Firebase
+const G = {
+  players : {},   // { pN: {name,x,y,dir,hp,lives,score,color,dead,respawnAt} }
+  bullets : {},   // { bId: {x,y,dir,owner} }
+  walls   : [],   // [{x,y,hp,maxHp}]
+};
+const keys = {};
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))
+    e.preventDefault();
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+// ── Утилиты UI ──────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+function showError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4500);
+}
+// ── Генерация карты ─────────────────────────────────────────────
+function generateWalls() {
+  const CELL  = 40;
+  const cells = [];
+  for (let col = 1; col < W/CELL - 1; col++) {
+    for (let row = 1; row < H/CELL - 1; row++) {
+      const cx = col*CELL + CELL/2;
+      const cy = row*CELL + CELL/2;
+      // Не ставим рядом со спавнами и в центре
+      const nearSpawn = SPAWNS.some(s => Math.abs(s.x - cx) < 90 && Math.abs(s.y - cy) < 90);
+      const inCenter  = cx > 360 && cx < 440 && cy > 260 && cy < 340;
+      if (!nearSpawn && !inCenter) cells.push({ x: col*CELL, y: row*CELL });
     }
-
-    // Цвета для игроков
-    const PLAYER_COLORS = ['#2ecc71', '#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#e67e22'];
-
-    // --- ЛОГИКА ВХОДА ---
-
-    document.getElementById('btn-create').onclick = async () => {
-      myName = document.getElementById('player-name').value.trim();
-      if (!myName) return alert("Введите имя!");
-      
-      roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-      isHost = true;
-      myId = 'p1';
-      roomRef = ref(db, 'rooms/' + roomCode);
-
-      const initialWalls = [];
-      for(let i=0; i<15; i++) {
-        initialWalls.push({ 
-          x: Math.floor(Math.random() * 15 + 5) * 40, 
-          y: Math.floor(Math.random() * 10 + 5) * 40, 
-          hp: Math.random() > 0.8 ? 3 : 1 
-        });
+  }
+  cells.sort(() => Math.random() - 0.5);
+  return cells.slice(0, 28).map(c => {
+    const steel = Math.random() < 0.22;
+    return { x: c.x, y: c.y, hp: steel ? 99 : 1, maxHp: steel ? 99 : 1 };
+  });
+}
+// ── Коллизии ────────────────────────────────────────────────────
+function hitsWall(nx, ny) {
+  return G.walls.some(w => w &&
+    nx + HALF > w.x + 3 && nx - HALF < w.x + 37 &&
+    ny + HALF > w.y + 3 && ny - HALF < w.y + 37
+  );
+}
+function outBounds(nx, ny) {
+  return nx - HALF < 0 || nx + HALF > W || ny - HALF < 0 || ny + HALF > H;
+}
+// ================================================================
+//  ВХОД
+// ================================================================
+document.getElementById('btn-create').onclick = async () => {
+  myName = document.getElementById('player-name').value.trim();
+  if (!myName) return showError('Введите имя!');
+  roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+  isHost   = true;
+  myId     = 'p1';
+  roomRef  = ref(db, 'rooms/' + roomCode);
+  const sp = SPAWNS[0];
+  await set(roomRef, {
+    status  : 'waiting',
+    walls   : generateWalls(),
+    bullets : {},
+    players : {
+      p1: {
+        name: myName, color: COLORS[0],
+        x: sp.x, y: sp.y, dir: sp.dir,
+        hp: MAX_HP, lives: MAX_LIVES, score: 0,
+        dead: false, respawnAt: null
       }
-
-      await set(roomRef, {
-        players: { p1: { name: myName, x: 100, y: 300, dir: 'right', hp: 5, color: PLAYER_COLORS[0] } },
-        walls: initialWalls,
-        status: 'waiting'
-      });
-
-      onDisconnect(roomRef).remove();
-      document.getElementById('display-room-code').innerText = roomCode;
-      showScreen('lobby');
-      listenToRoom();
-    };
-
-    document.getElementById('btn-join').onclick = async () => {
-      myName = document.getElementById('player-name').value.trim();
-      const code = document.getElementById('room-code-input').value.toUpperCase().trim();
-      if (!myName || !code) return alert("Введите имя и код комнаты!");
-
-      roomCode = code;
-      roomRef = ref(db, 'rooms/' + roomCode);
-      
-      // Проверяем существование комнаты
-      onValue(roomRef, async (snapshot) => {
-        const data = snapshot.val();
-        if (!data) {
-          alert("Комната не найдена!");
-          location.reload();
-          return;
-        }
-        if (!myId) {
-          const playerKeys = Object.keys(data.players || {});
-          if (playerKeys.length >= 6) {
-            alert("Комната полна!");
-            location.reload();
-            return;
-          }
-          myId = 'p' + (playerKeys.length + 1);
-          const color = PLAYER_COLORS[playerKeys.length] || '#fff';
-          
-          await update(ref(db, `rooms/${roomCode}/players`), {
-            [myId]: { name: myName, x: 700, y: 300, dir: 'left', hp: 5, color: color }
-          });
-          onDisconnect(ref(db, `rooms/${roomCode}/players/${myId}`)).remove();
-          showScreen('lobby');
-          listenToRoom();
-        }
-      }, { onlyOnce: true });
-    };
-
-    function listenToRoom() {
-      onValue(roomRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
-
-        state.players = data.players || {};
-        state.bullets = data.bullets || {};
-        state.walls = data.walls || [];
-
-        // Обновление списка игроков в лобби
-        const list = document.getElementById('player-list');
-        const countEl = document.getElementById('player-count');
-        list.innerHTML = "";
-        const playersArr = Object.values(state.players);
-        countEl.innerText = playersArr.length;
-
-        playersArr.forEach(p => {
-          list.innerHTML += `<li class="flex items-center gap-3 p-2 bg-slate-700 rounded-lg">
-            <div class="w-4 h-4 rounded-full" style="background:${p.color}"></div>
-            <span class="font-medium">${p.name} ${p.name === myName ? '(Вы)' : ''}</span>
-          </li>`;
-        });
-
-        if (isHost) {
-          document.getElementById('btn-start-game').disabled = playersArr.length < 2;
-        }
-
-        if (data.status === 'playing' && !gameRunning) {
-          startGame();
-        }
-      });
     }
-
-    document.getElementById('btn-start-game').onclick = () => {
-      update(roomRef, { status: 'playing' });
-    };
-
-    // --- ИГРОВОЙ ДВИЖОК ---
-
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const keys = {};
-    window.onkeydown = e => keys[e.code] = true;
-    window.onkeyup = e => keys[e.code] = false;
-
-    let lastShot = 0;
-
-    function startGame() {
+  });
+  onDisconnect(roomRef).remove();
+  openLobby();
+};
+document.getElementById('btn-join').onclick = async () => {
+  myName   = document.getElementById('player-name').value.trim();
+  const code = document.getElementById('room-code-input').value.toUpperCase().trim();
+  if (!myName)           return showError('Введите имя!');
+  if (code.length !== 5) return showError('Код — ровно 5 символов!');
+  roomCode = code;
+  roomRef  = ref(db, 'rooms/' + roomCode);
+  const snap = await get(roomRef);
+  const data = snap.val();
+  if (!data)                     return showError('Комната не найдена!');
+  if (data.status === 'playing') return showError('Игра уже идёт!');
+  const pKeys = Object.keys(data.players || {});
+  if (pKeys.length >= 6)         return showError('Комната заполнена (6/6)!');
+  const idx = pKeys.length;
+  myId      = 'p' + (idx + 1);
+  const sp  = SPAWNS[idx];
+  await update(ref(db, `rooms/${roomCode}/players`), {
+    [myId]: {
+      name: myName, color: COLORS[idx],
+      x: sp.x, y: sp.y, dir: sp.dir,
+      hp: MAX_HP, lives: MAX_LIVES, score: 0,
+      dead: false, respawnAt: null
+    }
+  });
+  onDisconnect(ref(db, `rooms/${roomCode}/players/${myId}`)).remove();
+  openLobby();
+};
+// ── Лобби ───────────────────────────────────────────────────────
+function openLobby() {
+  document.getElementById('display-room-code').innerText = roomCode;
+  document.getElementById('ui-room').innerText           = roomCode;
+  showScreen('lobby');
+  document.getElementById('host-controls').style.display  = isHost ? '' : 'none';
+  document.getElementById('student-wait').style.display   = isHost ? 'none' : '';
+  // ЕДИНСТВЕННАЯ подписка ко всей комнате
+  onValue(roomRef, snap => {
+    const data = snap.val();
+    if (!data) return;
+    // Синхронизируем локальный G
+    if (data.players) G.players = data.players;
+    if (data.walls)   G.walls   = data.walls;
+    if (data.bullets) {
+      // Хост управляет пулями — не-хост только читает
+      if (!isHost) G.bullets = data.bullets;
+    }
+    // Обновляем лобби-список
+    const entries = Object.entries(G.players);
+    document.getElementById('player-count-badge').innerText = `${entries.length}/6`;
+    document.getElementById('player-list').innerHTML = entries.map(([id, p]) => `
+      <div class="pcard">
+        <div class="dot" style="background:${p.color}"></div>
+        <span style="font-weight:600;">${p.name}</span>
+        ${id === myId ? '<span class="tag tag-me">ВЫ</span>' : ''}
+        ${id === 'p1' ? '<span class="tag tag-host">👑 Учитель</span>' : ''}
+      </div>`).join('');
+    if (isHost) {
+      const btn = document.getElementById('btn-start-game');
+      btn.disabled = entries.length < 2;
+      document.getElementById('lobby-status').innerText =
+        entries.length < 2
+          ? '⏳ Ждём хотя бы одного ученика...'
+          : `✅ Готово! ${entries.length} игроков`;
+    }
+    // Когда статус меняется на 'playing' — стартуем игру
+    if (data.status === 'playing' && !gameRunning) {
       gameRunning = true;
       showScreen('game');
       requestAnimationFrame(gameLoop);
     }
-
-    function checkCollision(x, y, size) {
-      // Границы карты
-      if (x < size || x > 800 - size || y < size || y > 600 - size) return true;
-      // Стены
-      for (let wall of state.walls) {
-        if (x + size > wall.x && x - size < wall.x + 40 && y + size > wall.y && y - size < wall.y + 40) {
-          return true;
-        }
-      }
-      return false;
+  });
+}
+document.getElementById('btn-start-game').onclick = () =>
+  update(roomRef, { status: 'playing' });
+// ================================================================
+//  ИГРОВОЙ ЦИКЛ
+// ================================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+let lastHostTick = 0;
+function gameLoop(ts) {
+  if (!gameRunning) return;
+  requestAnimationFrame(gameLoop);
+  handleInput();
+  if (isHost) hostTick(ts);
+  render();
+}
+// ── Ввод ────────────────────────────────────────────────────────
+function handleInput() {
+  const me = G.players[myId];
+  if (!me || me.dead) return;
+  let nx = me.x, ny = me.y, ndir = me.dir, moved = false;
+  if      (keys['ArrowUp']    || keys['KeyW']) { ny -= SPEED; ndir = 'up';    moved = true; }
+  else if (keys['ArrowDown']  || keys['KeyS']) { ny += SPEED; ndir = 'down';  moved = true; }
+  else if (keys['ArrowLeft']  || keys['KeyA']) { nx -= SPEED; ndir = 'left';  moved = true; }
+  else if (keys['ArrowRight'] || keys['KeyD']) { nx += SPEED; ndir = 'right'; moved = true; }
+  if (moved && !outBounds(nx, ny) && !hitsWall(nx, ny)) {
+    G.players[myId].x   = nx;   // предсказание на клиенте (плавно)
+    G.players[myId].y   = ny;
+    G.players[myId].dir = ndir;
+    update(ref(db, `rooms/${roomCode}/players/${myId}`), { x: nx, y: ny, dir: ndir });
+  }
+  // Стрельба
+  if (keys['Space'] && Date.now() - lastShot >= SHOOT_CD) {
+    lastShot = Date.now();
+    spawnBullet(myId, G.players[myId]);
+  }
+}
+function spawnBullet(ownerId, owner) {
+  if (!owner || owner.dead) return;
+  // Смещаем стартовую точку пули вперёд по направлению ствола
+  const off = HALF + 14;
+  let bx = owner.x, by = owner.y;
+  if      (owner.dir === 'up')    by -= off;
+  else if (owner.dir === 'down')  by += off;
+  else if (owner.dir === 'left')  bx -= off;
+  else                            bx += off;
+  const bRef   = push(ref(db, `rooms/${roomCode}/bullets`));
+  const bullet = { x: bx, y: by, dir: owner.dir, owner: ownerId };
+  G.bullets[bRef.key] = bullet;   // локально сразу — все видят без задержки
+  set(bRef, bullet);
+}
+// ================================================================
+//  ФИЗИКА ХОСТА (~30 тиков/с)
+//  Хост — единственный кто двигает пули и считает попадания.
+//  Все клиенты подтягивают пули из Firebase через onValue.
+// ================================================================
+function hostTick(ts) {
+  const TICK = 1000 / 30;          // 30 FPS физики
+  if (ts - lastHostTick < TICK) return;
+  lastHostTick = ts;
+  const now       = Date.now();
+  const bUpdates  = {};            // что писать в bullets
+  const pUpdates  = {};            // что писать в players
+  const walls     = G.walls.map(w => ({ ...w }));   // локальная копия
+  let   wallsDirty = false;
+  // 1. Возрождение игроков
+  for (const [pid, p] of Object.entries(G.players)) {
+    if (p.dead && p.lives > 0 && p.respawnAt && now >= p.respawnAt) {
+      const idx = parseInt(pid.replace('p','')) - 1;
+      const sp  = SPAWNS[idx < SPAWNS.length ? idx : 0];
+      const upd = { dead: false, hp: MAX_HP, x: sp.x, y: sp.y, dir: sp.dir, respawnAt: null };
+      Object.assign(G.players[pid], upd);
+      pUpdates[pid] = upd;
     }
-
-    function gameLoop() {
-      if (!gameRunning) return;
-
-      // 1. Движение игрока
-      const me = state.players[myId];
-      if (me && me.hp > 0) {
-        const speed = 3;
-        let nx = me.x, ny = me.y, ndir = me.dir;
-        let moved = false;
-
-        if (keys['ArrowUp'] || keys['KeyW']) { ny -= speed; ndir = 'up'; moved = true; }
-        else if (keys['ArrowDown'] || keys['KeyS']) { ny += speed; ndir = 'down'; moved = true; }
-        else if (keys['ArrowLeft'] || keys['KeyA']) { nx -= speed; ndir = 'left'; moved = true; }
-        else if (keys['ArrowRight'] || keys['KeyD']) { nx += speed; ndir = 'right'; moved = true; }
-
-        if (moved) {
-          if (!checkCollision(nx, ny, 18)) {
-            update(ref(db, `rooms/${roomCode}/players/${myId}`), { x: nx, y: ny, dir: ndir });
-          }
-        }
-
-        if (keys['Space'] && Date.now() - lastShot > 600) {
-          lastShot = Date.now();
-          const bId = push(ref(db, `rooms/${roomCode}/bullets`)).key;
-          set(ref(db, `rooms/${roomCode}/bullets/${bId}`), {
-            x: me.x, y: me.y, dir: me.dir, owner: myId
-          });
-        }
-      }
-
-      // 2. Хост считает физику снарядов
-      if (isHost) {
-        const bulletUpdates = {};
-        const playerUpdates = {};
-        const wallUpdates = [...state.walls];
-        let changed = false;
-
-        for (let bId in state.bullets) {
-          const b = state.bullets[bId];
-          const bSpeed = 7;
-          if (b.dir === 'up') b.y -= bSpeed;
-          if (b.dir === 'down') b.y += bSpeed;
-          if (b.dir === 'left') b.x -= bSpeed;
-          if (b.dir === 'right') b.x += bSpeed;
-
-          // Столкновение со стеной
-          let hitWall = false;
-          for (let i=0; i < wallUpdates.length; i++) {
-            const w = wallUpdates[i];
-            if (b.x > w.x && b.x < w.x + 40 && b.y > w.y && b.y < w.y + 40) {
-              wallUpdates[i].hp -= 1;
-              if (wallUpdates[i].hp <= 0) wallUpdates[i] = null;
-              hitWall = true;
-              break;
-            }
-          }
-
-          // Столкновение с игроком
-          let hitPlayer = false;
-          for (let pId in state.players) {
-            const p = state.players[pId];
-            if (pId !== b.owner && p.hp > 0 && Math.hypot(p.x - b.x, p.y - b.y) < 20) {
-              playerUpdates[pId] = { hp: p.hp - 1 };
-              hitPlayer = true;
-              break;
-            }
-          }
-
-          if (hitWall || hitPlayer || b.x < 0 || b.x > 800 || b.y < 0 || b.y > 600) {
-            bulletUpdates[bId] = null;
-            changed = true;
-          } else {
-            bulletUpdates[bId] = b;
-          }
-        }
-
-        if (changed) {
-          update(ref(db, `rooms/${roomCode}/bullets`), bulletUpdates);
-          update(ref(db, `rooms/${roomCode}/players`), playerUpdates);
-          set(ref(db, `rooms/${roomCode}/walls`), wallUpdates.filter(w => w !== null));
-        }
-      }
-
-      draw();
-      requestAnimationFrame(gameLoop);
+  }
+  // 2. Движение пуль и проверка столкновений
+  for (const [bId, b] of Object.entries(G.bullets)) {
+    let { x, y, dir, owner } = b;
+    // Двигаем пулю
+    if      (dir === 'up')    y -= BSPEED;
+    else if (dir === 'down')  y += BSPEED;
+    else if (dir === 'left')  x -= BSPEED;
+    else if (dir === 'right') x += BSPEED;
+    // Вылет за границу
+    if (x < 0 || x > W || y < 0 || y > H) {
+      bUpdates[bId] = null;
+      delete G.bullets[bId];
+      continue;
     }
-
-    function draw() {
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, 800, 600);
-
-      // Сетка
-      ctx.strokeStyle = '#111';
-      for(let i=0; i<800; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,600); ctx.stroke(); }
-      for(let i=0; i<600; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(800,i); ctx.stroke(); }
-
-      // Стены
-      state.walls.forEach(w => {
-        ctx.fillStyle = w.hp > 1 ? '#555' : '#8B4513';
-        ctx.fillRect(w.x + 2, w.y + 2, 36, 36);
-        ctx.strokeStyle = '#000';
-        ctx.strokeRect(w.x + 2, w.y + 2, 36, 36);
-      });
-
-      // Игроки
-      for (let id in state.players) {
-        const p = state.players[id];
-        if (p.hp <= 0) continue;
-
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - 18, p.y - 18, 36, 36);
-        
-        ctx.fillStyle = '#ccc';
-        if (p.dir === 'up') ctx.fillRect(p.x - 3, p.y - 25, 6, 15);
-        if (p.dir === 'down') ctx.fillRect(p.x - 3, p.y + 10, 6, 15);
-        if (p.dir === 'left') ctx.fillRect(p.x - 25, p.y - 3, 15, 6);
-        if (p.dir === 'right') ctx.fillRect(p.x + 10, p.y - 3, 15, 6);
-
-        // HP
-        ctx.fillStyle = 'red';
-        ctx.fillRect(p.x - 20, p.y - 30, 40, 5);
-        ctx.fillStyle = 'lime';
-        ctx.fillRect(p.x - 20, p.y - 30, 40 * (p.hp / 5), 5);
-        
-        ctx.fillStyle = 'white';
-        ctx.font = '10px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(p.name, p.x, p.y - 35);
-      }
-
-      // Пули
-      for (let bId in state.bullets) {
-        const b = state.bullets[bId];
-        ctx.fillStyle = 'yellow';
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, 4, 0, Math.PI*2);
-        ctx.fill();
-      }
-
-      // Проверка конца игры
-      const alive = Object.values(state.players).filter(p => p.hp > 0);
-      if (alive.length <= 1 && gameRunning) {
-        const winner = alive[0];
-        showOverlay(winner && winner.name === myName ? 'win' : 'lose', winner ? winner.name : 'Никто');
+    // Столкновение со стеной
+    let hitWall = false;
+    for (let i = 0; i < walls.length; i++) {
+      const w = walls[i];
+      if (!w) continue;
+      if (x > w.x + 3 && x < w.x + 37 && y > w.y + 3 && y < w.y + 37) {
+        if (w.hp < 99) {         // кирпич ломается
+          walls[i] = { ...w, hp: w.hp - 1 };
+          if (walls[i].hp <= 0) walls[i] = null;
+        }
+        // сталь (hp=99) пулю останавливает, но сама не разрушается
+        hitWall    = true;
+        wallsDirty = true;
+        break;
       }
     }
-
-    function showOverlay(type, winnerName) {
-      gameRunning = false;
-      const overlay = document.getElementById('game-overlay');
-      const title = document.getElementById('overlay-title');
-      const msg = document.getElementById('overlay-message');
-      const icon = document.getElementById('overlay-icon');
-
-      overlay.classList.remove('hidden');
-      if (type === 'win') {
-        icon.innerText = '🏆';
-        title.innerText = 'ПОБЕДА!';
-        msg.innerText = 'Вы стали чемпионом школы!';
-      } else {
-        icon.innerText = '💀';
-        title.innerText = 'ПОРАЖЕНИЕ';
-        msg.innerText = `Победил игрок: ${winnerName}`;
+    if (hitWall) {
+      bUpdates[bId] = null;
+      delete G.bullets[bId];
+      continue;
+    }
+    // Столкновение с танком
+    let hitPlayer = false;
+    for (const [pid, p] of Object.entries(G.players)) {
+      if (pid === owner || p.dead) continue;
+      if (Math.hypot(p.x - x, p.y - y) < HALF + 6) {
+        hitPlayer = true;
+        const newHp = (p.hp || 1) - 1;
+        if (newHp <= 0) {
+          // Жизнь закончилась
+          const newLives = (p.lives || 1) - 1;
+          const upd = newLives > 0
+            ? { hp: 0, lives: newLives, dead: true,  respawnAt: now + RESPAWN_MS }
+            : { hp: 0, lives: 0,        dead: true,  respawnAt: null };
+          Object.assign(G.players[pid], upd);
+          pUpdates[pid] = upd;
+          // +1 очко стрелку
+          const shooter = G.players[owner];
+          if (shooter) {
+            const ns = (shooter.score || 0) + 1;
+            G.players[owner].score    = ns;
+            pUpdates[owner] = { ...(pUpdates[owner] || {}), score: ns };
+          }
+        } else {
+          G.players[pid].hp = newHp;
+          pUpdates[pid] = { ...(pUpdates[pid] || {}), hp: newHp };
+        }
+        break;
       }
     }
-  </script>
+    if (hitPlayer) {
+      bUpdates[bId] = null;
+      delete G.bullets[bId];
+      continue;
+    }
+    // Пуля летит дальше — обновляем позицию
+    const moved = { ...b, x, y };
+    G.bullets[bId] = moved;
+    bUpdates[bId]  = moved;
+  }
+  // 3. Пишем изменения в Firebase одним batch
+  if (Object.keys(bUpdates).length)
+    update(ref(db, `rooms/${roomCode}/bullets`), bUpdates);
+  if (Object.keys(pUpdates).length)
+    update(ref(db, `rooms/${roomCode}/players`), pUpdates);
+  if (wallsDirty) {
+    const cleaned = walls.filter(Boolean);
+    G.walls = cleaned;
+    set(ref(db, `rooms/${roomCode}/walls`), cleaned);
+  }
+}
+// ================================================================
+//  РЕНДЕРИНГ
+// ================================================================
+function render() {
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, W, H);
+  // Сетка
+  ctx.strokeStyle = '#1a2640';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= W; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y <= H; y += 40) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  drawWalls();
+  drawTanks();
+  drawBullets();
+  updateHUD();
+  checkEndGame();
+}
+function drawWalls() {
+  for (const w of G.walls) {
+    if (!w) continue;
+    const steel = w.hp >= 99;
+    if (steel) {
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(w.x+2, w.y+2, 36, 36);
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+      ctx.strokeRect(w.x+2, w.y+2, 36, 36);
+      ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(w.x+8, w.y+8); ctx.lineTo(w.x+32, w.y+32); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+32,w.y+8); ctx.lineTo(w.x+8, w.y+32); ctx.stroke();
+    } else {
+      const dmg = 1 - w.hp / w.maxHp;
+      const r = Math.round(160 - dmg*60), g2 = Math.round(50 - dmg*20), b = Math.round(20 - dmg*10);
+      ctx.fillStyle = `rgb(${r},${g2},${b})`;
+      ctx.fillRect(w.x+2, w.y+2, 36, 36);
+      ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1;
+      ctx.strokeRect(w.x+2, w.y+2, 36, 36);
+      ctx.beginPath(); ctx.moveTo(w.x+2, w.y+21); ctx.lineTo(w.x+38, w.y+21); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+21, w.y+2);  ctx.lineTo(w.x+21, w.y+21); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+11, w.y+21); ctx.lineTo(w.x+11, w.y+38); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+31, w.y+21); ctx.lineTo(w.x+31, w.y+38); ctx.stroke();
+    }
+  }
+}
+function drawTanks() {
+  for (const [id, p] of Object.entries(G.players)) {
+    if (p.dead) continue;
+    const { x, y, dir, color, hp } = p;
+    const S   = HALF;
+    const isMe = id === myId;
+    // Тень
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(x-S+4, y-S+4, S*2, S*2);
+    // Гусеницы
+    ctx.fillStyle = '#374151';
+    if (dir === 'up' || dir === 'down') {
+      ctx.fillRect(x-S-5, y-S, 8, S*2);
+      ctx.fillRect(x+S-3, y-S, 8, S*2);
+    } else {
+      ctx.fillRect(x-S, y-S-5, S*2, 8);
+      ctx.fillRect(x-S, y+S-3, S*2, 8);
+    }
+    // Корпус
+    ctx.fillStyle = color;
+    ctx.fillRect(x-S, y-S, S*2, S*2);
+    // Башня
+    ctx.fillStyle = shadeHex(color, -30);
+    ctx.beginPath(); ctx.arc(x, y, S*0.54, 0, Math.PI*2); ctx.fill();
+    // Ствол
+    ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    const gl = S + 13;
+    ctx.beginPath();
+    if      (dir === 'up')    { ctx.moveTo(x, y); ctx.lineTo(x,    y-gl); }
+    else if (dir === 'down')  { ctx.moveTo(x, y); ctx.lineTo(x,    y+gl); }
+    else if (dir === 'left')  { ctx.moveTo(x, y); ctx.lineTo(x-gl, y);    }
+    else                      { ctx.moveTo(x, y); ctx.lineTo(x+gl, y);    }
+    ctx.stroke();
+    // Рамка своего танка
+    if (isMe) {
+      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
+      ctx.setLineDash([5, 3]);
+      ctx.strokeRect(x-S-2, y-S-2, S*2+4, S*2+4);
+      ctx.setLineDash([]);
+    }
+    // HP-полоска
+    const bw = S*2;
+    ctx.fillStyle = '#1f2937'; ctx.fillRect(x-S, y-S-11, bw, 6);
+    ctx.fillStyle = hp >= MAX_HP ? '#22c55e' : hp >= 2 ? '#eab308' : '#ef4444';
+    ctx.fillRect(x-S, y-S-11, bw*(hp/MAX_HP), 6);
+    // Имя
+    ctx.fillStyle   = isMe ? '#fde68a' : '#f1f5f9';
+    ctx.font        = 'bold 11px Segoe UI';
+    ctx.textAlign   = 'center';
+    ctx.shadowColor = '#000'; ctx.shadowBlur = 5;
+    ctx.fillText(p.name, x, y-S-17);
+    ctx.shadowBlur = 0;
+  }
+}
+function drawBullets() {
+  for (const b of Object.values(G.bullets)) {
+    if (!b) continue;
+    const col = G.players[b.owner]?.color || '#fbbf24';
+    // Хвост
+    ctx.strokeStyle = col + '66'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    const tl = 14;
+    ctx.beginPath();
+    if      (b.dir === 'up')    { ctx.moveTo(b.x, b.y+tl); ctx.lineTo(b.x, b.y); }
+    else if (b.dir === 'down')  { ctx.moveTo(b.x, b.y-tl); ctx.lineTo(b.x, b.y); }
+    else if (b.dir === 'left')  { ctx.moveTo(b.x+tl, b.y); ctx.lineTo(b.x, b.y); }
+    else                        { ctx.moveTo(b.x-tl, b.y); ctx.lineTo(b.x, b.y); }
+    ctx.stroke();
+    // Ядро со свечением
+    ctx.shadowBlur = 14; ctx.shadowColor = col;
+    ctx.fillStyle  = '#fef9c3';
+    ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+}
+function shadeHex(hex, amt) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const r = Math.max(0, Math.min(255, (n >> 16) + amt));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
+  const b = Math.max(0, Math.min(255, (n & 0xff) + amt));
+  return `rgb(${r},${g},${b})`;
+}
+// ── HUD (за пределами canvas) ───────────────────────────────────
+function updateHUD() {
+  const me = G.players[myId];
+  if (!me) return;
+  // Жизни
+  const h = '❤️'.repeat(Math.max(0, me.lives)) + '🖤'.repeat(Math.max(0, MAX_LIVES - me.lives));
+  document.getElementById('ui-lives').innerHTML = h;
+  // Счёт
+  const sorted = Object.values(G.players).sort((a,b) => (b.score||0) - (a.score||0));
+  document.getElementById('ui-scores').innerHTML = sorted.map(p =>
+    `<span style="color:${p.color};font-weight:${p.name===myName?900:500};">
+      ${p.name}: ${p.score||0}${p.lives<=0?' 💀':''}
+    </span>`
+  ).join('');
+  // Таймер возрождения
+  const bar = document.getElementById('respawn-bar');
+  if (me.dead && me.lives > 0 && me.respawnAt) {
+    const sec = Math.ceil((me.respawnAt - Date.now()) / 1000);
+    document.getElementById('respawn-timer').innerText = Math.max(0, sec);
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+// ── Конец игры ───────────────────────────────────────────────────
+function checkEndGame() {
+  if (gameOverShown) return;
+  const all   = Object.values(G.players);
+  if (all.length < 2) return;
+  const alive = all.filter(p => p.lives > 0);
+  if (alive.length > 1) return;
+  gameOverShown = true;
+  gameRunning   = false;
+  const winner = alive[0] || null;
+  const isWin  = winner && winner.name === myName;
+  document.getElementById('overlay-icon').innerText    = isWin ? '🏆' : '💀';
+  document.getElementById('overlay-title').innerText   = isWin ? 'ПОБЕДА!' : 'КОНЕЦ БОЯ';
+  document.getElementById('overlay-winner').innerText  =
+    winner ? `Победитель: ${winner.name}` : 'Все выбыли — ничья!';
+  document.getElementById('overlay-scores').innerHTML  =
+    all.sort((a,b) => (b.score||0) - (a.score||0))
+       .map(p => `${p.name}: ${p.score||0} очков`).join('<br>');
+  document.getElementById('game-overlay').classList.add('show');
+  if (isHost) setTimeout(() => set(roomRef, null), 60000);
+}
+</script>
 </body>
 </html>
