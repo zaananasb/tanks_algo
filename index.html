@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн - болота и мины</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Танки Онлайн — School Edition v4</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -18,44 +17,65 @@
     .screen.active { display: flex; }
     .card {
       background: rgba(15,23,42,0.97); border: 1px solid #1e3a5f; border-radius: 24px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.7); padding: 36px; max-width: 440px; width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7); padding: 28px 32px; max-width: 480px; width: 100%;
     }
     .btn {
-      width: 100%; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: 15px;
+      width: 100%; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 14px;
       border: none; cursor: pointer; transition: all 0.18s; color: white;
     }
-    .btn:hover:not(:disabled)  { transform: translateY(-2px); filter: brightness(1.15); }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.15); }
     .btn:active:not(:disabled) { transform: translateY(0); }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; background: #374151 !important; }
     .btn-green  { background: linear-gradient(135deg,#059669,#10b981); }
     .btn-blue   { background: linear-gradient(135deg,#2563eb,#3b82f6); }
     .btn-orange { background: linear-gradient(135deg,#ea580c,#f97316); }
+    .btn-purple { background: linear-gradient(135deg,#7c3aed,#a855f7); }
     .inp {
-      width: 100%; padding: 13px 16px; background: rgba(0,0,0,0.4); border: 2px solid #1e3a5f;
-      border-radius: 12px; color: white; font-size: 16px; outline: none; transition: border-color 0.2s;
+      width: 100%; padding: 11px 14px; background: rgba(0,0,0,0.4); border: 2px solid #1e3a5f;
+      border-radius: 10px; color: white; font-size: 15px; outline: none; transition: border-color 0.2s;
     }
     .inp:focus { border-color: #f97316; }
     .inp::placeholder { color: #475569; }
     @keyframes glow {
       0%,100% { text-shadow: 0 0 8px #f97316; }
-      50% { text-shadow: 0 0 28px #f97316, 0 0 56px #f97316aa; }
+      50%      { text-shadow: 0 0 28px #f97316, 0 0 56px #f97316aa; }
     }
     .glow { animation: glow 2.5s ease-in-out infinite; }
     .pcard {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-      background: rgba(0,0,0,0.35); border: 1px solid #1e3a5f; border-radius: 12px;
+      display: flex; align-items: center; gap: 10px; padding: 9px 13px;
+      background: rgba(0,0,0,0.35); border: 1px solid #1e3a5f; border-radius: 11px;
     }
-    .dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
-    .tag { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-    .tag-me { background: #78350f; color: #fbbf24; }
+    .dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+    .tag { margin-left: auto; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+    .tag-me   { background: #78350f; color: #fbbf24; }
     .tag-host { background: #14532d; color: #4ade80; }
+    /* Class selection cards */
+    .cls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .cls-card {
+      border: 2px solid #1e3a5f; border-radius: 10px; padding: 10px 8px; cursor: pointer;
+      background: rgba(0,0,0,0.3); transition: all 0.15s; text-align: center;
+    }
+    .cls-card:hover { border-color: #f97316; background: rgba(249,115,22,0.08); }
+    .cls-card.selected { border-color: #f97316; background: rgba(249,115,22,0.18); }
+    .cls-card .cls-icon { font-size: 22px; margin-bottom: 4px; }
+    .cls-card .cls-name { font-size: 11px; font-weight: 800; color: #f1f5f9; }
+    .cls-card .cls-desc { font-size: 9px; color: #64748b; margin-top: 3px; line-height: 1.4; }
+    /* Mode tabs */
+    .mode-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .mode-tab {
+      flex: 1; padding: 9px 6px; border: 2px solid #1e3a5f; border-radius: 10px;
+      cursor: pointer; background: rgba(0,0,0,0.3); text-align: center;
+      font-size: 11px; font-weight: 700; color: #94a3b8; transition: all 0.15s;
+    }
+    .mode-tab:hover { border-color: #3b82f6; color: #93c5fd; }
+    .mode-tab.selected { border-color: #f97316; background: rgba(249,115,22,0.15); color: #f97316; }
     canvas {
       display: block; border-radius: 12px; border: 3px solid #1e3a5f;
       box-shadow: 0 0 50px rgba(0,0,0,0.6); background: #0f172a;
     }
     #scoreboard {
       max-width: 800px; width: 100%; background: rgba(0,0,0,0.55); border: 1px solid #1e3a5f;
-      border-radius: 12px; padding: 8px 16px; display: flex; align-items: center;
+      border-radius: 12px; padding: 7px 14px; display: flex; align-items: center;
       justify-content: space-between; gap: 10px; flex-wrap: wrap;
     }
     #game-overlay {
@@ -67,754 +87,1135 @@
     #respawn-bar {
       position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
       background: rgba(0,0,0,0.85); border: 1px solid #f97316; border-radius: 30px;
-      padding: 7px 22px; font-size: 13px; color: #fbbf24; display: none;
+      padding: 7px 20px; font-size: 12px; color: #fbbf24; display: none;
       white-space: nowrap; z-index: 5;
     }
     #respawn-bar.show { display: block; }
+    #ability-bar {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(0,0,0,0.75); border: 1px solid #334155; border-radius: 10px;
+      padding: 7px 12px; font-size: 11px; color: #94a3b8; z-index: 5;
+      display: flex; flex-direction: column; gap: 4px; min-width: 140px;
+    }
     #auth-error {
       background: #7f1d1d; border: 1px solid #ef4444; border-radius: 10px;
-      padding: 10px 14px; font-size: 13px; color: #fca5a5; display: none;
+      padding: 9px 13px; font-size: 12px; color: #fca5a5; display: none;
     }
     #auth-error.show { display: block; }
   </style>
 </head>
 <body>
 
+<!-- ═══ AUTH SCREEN ═══ -->
 <div id="screen-auth" class="screen active">
   <div class="card">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="display:inline-block;background:linear-gradient(135deg,#ea580c,#f97316);padding:14px;border-radius:16px;margin-bottom:14px;">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="white">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="display:inline-block;background:linear-gradient(135deg,#ea580c,#f97316);padding:13px;border-radius:15px;margin-bottom:12px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
           <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
         </svg>
       </div>
-      <h1 class="retro" style="color:#f97316;font-size:13px;line-height:2;margin-bottom:6px;">ТАНКИ ОНЛАЙН</h1>
-      <p style="color:#475569;font-size:13px;">Школьная аркада - болота и мины</p>
+      <h1 class="retro" style="color:#f97316;font-size:12px;line-height:2;margin-bottom:4px;">ТАНКИ ОНЛАЙН</h1>
+      <p style="color:#475569;font-size:12px;">School Edition v4 · 2–6 игроков</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;flex-direction:column;gap:11px;">
       <input class="inp" type="text" id="player-name" placeholder="Введите ваше имя..." maxlength="12" autocomplete="off">
-      <button class="btn btn-green" id="btn-create">Создать комнату (Учитель)</button>
+      <button class="btn btn-green" id="btn-create">🎓 Создать комнату (Учитель)</button>
       <div style="display:flex;gap:8px;align-items:stretch;">
-        <input class="inp" type="text" id="room-code-input" placeholder="КОД" maxlength="5" style="width:120px;text-align:center;text-transform:uppercase;font-size:20px;font-weight:900;letter-spacing:4px;" autocomplete="off">
-        <button class="btn btn-blue" id="btn-join" style="flex:1;">Войти</button>
+        <input class="inp" type="text" id="room-code-input" placeholder="КОД" maxlength="5"
+               style="width:110px;text-align:center;text-transform:uppercase;font-size:19px;font-weight:900;letter-spacing:4px;" autocomplete="off">
+        <button class="btn btn-blue" id="btn-join" style="flex:1;">🎮 Войти</button>
       </div>
       <div id="auth-error"></div>
     </div>
   </div>
 </div>
 
+<!-- ═══ CLASS + MODE SELECTION SCREEN ═══ -->
+<div id="screen-classmode" class="screen">
+  <div class="card" style="max-width:500px;">
+    <h2 style="text-align:center;margin-bottom:14px;font-size:14px;color:#f97316;font-family:'Press Start 2P',cursive;">⚙️ НАСТРОЙКА</h2>
+
+    <!-- Class selection -->
+    <p style="color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Выбери класс</p>
+    <div class="cls-grid" id="class-grid">
+      <div class="cls-card selected" data-cls="basic">
+        <div class="cls-icon">🛡️</div>
+        <div class="cls-name">Базовый</div>
+        <div class="cls-desc">3 HP · Стд. скорость<br>Мины наносят -1 урон<br>КД 600 мс</div>
+      </div>
+      <div class="cls-card" data-cls="scout">
+        <div class="cls-icon">⚡</div>
+        <div class="cls-name">Скаут</div>
+        <div class="cls-desc">2 HP · Быстрый<br>Q/E — боковой выстрел<br>КД 400 мс</div>
+      </div>
+      <div class="cls-card" data-cls="heavy">
+        <div class="cls-icon">💣</div>
+        <div class="cls-name">Тяжёлый</div>
+        <div class="cls-desc">5 HP · Медленный<br>F — ядерный удар (30 с)<br>КД 1000 мс</div>
+      </div>
+      <div class="cls-card" data-cls="engineer">
+        <div class="cls-icon">🔧</div>
+        <div class="cls-name">Инженер</div>
+        <div class="cls-desc">4 HP · Стд. скорость<br>Q — мина · E — стена<br>КД 500 мс</div>
+      </div>
+    </div>
+
+    <!-- Mode selection (host only) -->
+    <div id="mode-section" style="display:none;">
+      <p style="color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Режим игры</p>
+      <div class="mode-tabs">
+        <div class="mode-tab selected" data-mode="ffa">
+          💀 FFA<br><span style="font-size:9px;font-weight:400;color:#64748b;">До 20 убийств · ∞ респавн</span>
+        </div>
+        <div class="mode-tab" data-mode="bedwars">
+          🛏️ Bedwars<br><span style="font-size:9px;font-weight:400;color:#64748b;">🔴 vs 🔵 · Защити базу</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="classmode-status" style="color:#64748b;font-size:12px;text-align:center;margin-bottom:10px;min-height:18px;"></div>
+    <button class="btn btn-orange" id="btn-confirm-class">✅ Готово!</button>
+  </div>
+</div>
+
+<!-- ═══ LOBBY SCREEN ═══ -->
 <div id="screen-lobby" class="screen">
   <div class="card">
-    <div style="text-align:center;margin-bottom:20px;">
-      <p style="color:#64748b;font-size:11px;letter-spacing:3px;margin-bottom:6px;">КОД КОМНАТЫ</p>
-      <div id="display-room-code" class="retro glow" style="color:#f97316;font-size:32px;letter-spacing:10px;">-----</div>
-      <p style="color:#64748b;font-size:11px;margin-top:6px;">Назовите этот код ученикам</p>
+    <div style="text-align:center;margin-bottom:18px;">
+      <p style="color:#64748b;font-size:10px;letter-spacing:3px;margin-bottom:5px;">КОД КОМНАТЫ</p>
+      <div id="display-room-code" class="retro glow" style="color:#f97316;font-size:30px;letter-spacing:10px;">-----</div>
+      <p style="color:#64748b;font-size:10px;margin-top:5px;">Назовите код ученикам</p>
     </div>
-    <div style="margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-        <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Игроки</span>
-        <span id="player-count-badge" style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">0/6</span>
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:9px;">
+        <span style="color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Игроки</span>
+        <span id="player-count-badge" style="background:#1e3a5f;color:#60a5fa;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;">0/6</span>
       </div>
-      <div id="player-list" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;"></div>
+      <div id="player-list" style="display:flex;flex-direction:column;gap:7px;max-height:230px;overflow-y:auto;"></div>
     </div>
-    <div id="lobby-status" style="color:#64748b;font-size:13px;text-align:center;margin-bottom:12px;"></div>
+    <div id="lobby-status" style="color:#64748b;font-size:12px;text-align:center;margin-bottom:11px;"></div>
     <div id="host-controls" style="display:none;">
-      <button class="btn btn-orange" id="btn-start-game" disabled>Начать бой!</button>
-      <p style="color:#475569;font-size:11px;text-align:center;margin-top:8px;">Минимум 2 игрока</p>
+      <button class="btn btn-orange" id="btn-start-game" disabled>⚔️ Начать бой!</button>
+      <p style="color:#475569;font-size:10px;text-align:center;margin-top:7px;">Минимум 2 игрока</p>
     </div>
     <div id="student-wait" style="display:none;text-align:center;padding:10px 0;">
-      <p style="font-weight:700;color:#e2e8f0;">Ждем учителя...</p>
-      <p style="color:#475569;font-size:12px;margin-top:4px;">Игра начнется автоматически</p>
+      <p style="font-weight:700;color:#e2e8f0;">⏳ Ждём учителя...</p>
+      <p style="color:#475569;font-size:11px;margin-top:4px;">Игра начнётся автоматически</p>
     </div>
   </div>
 </div>
 
-<div id="screen-game" class="screen" style="flex-direction:column;gap:10px;align-items:center;">
+<!-- ═══ GAME SCREEN ═══ -->
+<div id="screen-game" class="screen" style="flex-direction:column;gap:8px;align-items:center;">
   <div id="scoreboard">
-    <div style="font-size:12px;color:#64748b;">Комната: <span id="ui-room" style="color:#f97316;font-weight:700;"></span></div>
-    <div id="ui-scores" style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;"></div>
-    <div style="font-size:14px;" id="ui-lives"></div>
+    <div style="font-size:11px;color:#64748b;">
+      <span id="ui-mode-badge" style="color:#f97316;font-weight:800;"></span>
+      · Комната: <span id="ui-room" style="color:#f97316;font-weight:700;"></span>
+    </div>
+    <div id="ui-scores" style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;"></div>
+    <div style="font-size:13px;" id="ui-lives"></div>
   </div>
   <div style="position:relative;">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="game-overlay">
-      <div id="overlay-icon" style="font-size:72px;margin-bottom:16px;filter:drop-shadow(0 0 20px gold);">🏆</div>
-      <h2 id="overlay-title" class="retro" style="font-size:20px;margin-bottom:12px;">ПОБЕДА!</h2>
-      <p id="overlay-winner" style="font-size:20px;color:#fbbf24;font-weight:700;margin-bottom:8px;"></p>
-      <div id="overlay-scores" style="color:#94a3b8;font-size:13px;margin-bottom:28px;line-height:1.8;"></div>
-      <button class="btn btn-orange" id="btn-menu" style="width:auto;padding:12px 40px;font-size:15px;">В меню</button>
+      <div id="overlay-icon" style="font-size:68px;margin-bottom:14px;filter:drop-shadow(0 0 20px gold);">🏆</div>
+      <h2 id="overlay-title" class="retro" style="font-size:18px;margin-bottom:11px;">ПОБЕДА!</h2>
+      <p id="overlay-winner" style="font-size:18px;color:#fbbf24;font-weight:700;margin-bottom:8px;"></p>
+      <div id="overlay-scores" style="color:#94a3b8;font-size:12px;margin-bottom:24px;line-height:1.9;"></div>
+      <button class="btn btn-orange" id="btn-menu" style="width:auto;padding:11px 38px;font-size:14px;">🏠 В меню</button>
     </div>
-    <div id="respawn-bar">Вы погибли! Возрождение через <strong id="respawn-timer">3</strong>с...</div>
+    <div id="respawn-bar">💀 Возрождение через <strong id="respawn-timer">3</strong>с…</div>
+    <div id="ability-bar">
+      <div id="ab-nuke"  style="display:none;"></div>
+      <div id="ab-place" style="display:none;"></div>
+      <div id="ab-side"  style="display:none;"></div>
+    </div>
   </div>
-  <p style="color:#334155;font-size:11px;">WASD / Стрелки - движение | Пробел - огонь | Болота замедляют | Мины взрываются при наезде</p>
+  <p id="controls-hint" style="color:#334155;font-size:10px;">
+    WASD — движение · Пробел — огонь · Болото замедляет · Мина взрывается
+  </p>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, onDisconnect }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-const firebaseConfig = {
+/* ══════════════════════════════════════════════
+   FIREBASE
+══════════════════════════════════════════════ */
+const fbApp = initializeApp({
   apiKey: "AIzaSyBtZHdsONjUjFjvVec7vTsjMoVTIKtsx0s",
   authDomain: "tanki-online-algo.firebaseapp.com",
   databaseURL: "https://tanki-online-algo-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "tanki-online-algo",
   storageBucket: "tanki-online-algo.firebasestorage.app",
   messagingSenderId: "790323345404",
-  appId: "1:790323345404:web:2b7540ca84c5977aa9a479",
-  measurementId: "G-5WTXB7GLPX"
-};
-const fbApp = initializeApp(firebaseConfig);
+  appId: "1:790323345404:web:2b7540ca84c5977aa9a479"
+});
 const db = getDatabase(fbApp);
 
-const W = 800;
-const H = 600;
-const CELL = 40;
-const HALF = 18;
-const SPEED = 3;
-const BSPEED = 8;
-const SHOOT_CD = 500;
-const MAX_HP = 3;
-const MAX_LIVES = 3;
+/* ══════════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════════ */
+const W = 800, H = 600, CELL = 40;
+const BSPEED     = 9;
 const RESPAWN_MS = 3000;
-const INPUT_MS = 50;
-const HOST_TICK = 1000 / 30;
-const WALL_PAD = 0;
-const WALL_SIZE = CELL;
+const INPUT_MS   = 50;
+const HOST_TICK  = 1000 / 30;
+const WALL_SIZE  = CELL;
 const SWAMP_SLOW = 0.48;
-const MINE_DAMAGE = 2;
 const MINE_RADIUS = 20;
+const FFA_KILL_LIMIT = 20;
+const BW_BASE_HP = 25;
+const INTERP_SPEED = 0.2;
 
-const SPAWNS = [
-  { x: 60, y: 60, dir: 'right' },
-  { x: 740, y: 540, dir: 'left' },
-  { x: 740, y: 60, dir: 'left' },
-  { x: 60, y: 540, dir: 'right' },
-  { x: 400, y: 45, dir: 'down' },
-  { x: 400, y: 555, dir: 'up' }
-];
-const COLORS = ['#22c55e','#ef4444','#3b82f6','#eab308','#a855f7','#f97316'];
-
-let myId = null;
-let myName = '';
-let roomCode = null;
-let isHost = false;
-let gameRunning = false;
-let gameOverShown = false;
-let roomRef = null;
-let bulletSeq = 0;
-
-const G = {
-  players: {},
-  bullets: {},
-  walls: [],
-  swamps: [],
-  mines: [],
-  particles: []
+/* ── Classes ── */
+const CLASSES = {
+  basic:    { name:'Базовый',   icon:'🛡️', hp:3, speed:2.5, halfSize:18, shootCd:600,  dmg:1, mineReduction:1, color2:'#4ade80' },
+  scout:    { name:'Скаут',     icon:'⚡', hp:2, speed:4.0, halfSize:14, shootCd:400,  dmg:1, mineReduction:0, color2:'#38bdf8' },
+  heavy:    { name:'Тяжёлый',   icon:'💣', hp:5, speed:2.0, halfSize:21, shootCd:1000, dmg:2, mineReduction:0, color2:'#f87171', nukeCd:30000 },
+  engineer: { name:'Инженер',   icon:'🔧', hp:4, speed:3.0, halfSize:18, shootCd:500,  dmg:1, mineReduction:0, color2:'#fbbf24', placeCd:5000 }
 };
 
-// Client-side interpolation: we smoothly move render positions towards server positions
-// For non-host clients, this eliminates the jittery movement from Firebase updates
-const renderTanks = {}; // { pid: { x, y } }
-const renderTargets = {}; // { pid: { x, y } }
-const INTERP_SPEED = 0.18; // how fast we catch up per frame (0-1)
+/* ── Spawns ── */
+const SPAWNS_FFA = [
+  {x:60,  y:60,  dir:'right'},
+  {x:740, y:540, dir:'left' },
+  {x:740, y:60,  dir:'left' },
+  {x:60,  y:540, dir:'right'},
+  {x:400, y:45,  dir:'down' },
+  {x:400, y:555, dir:'up'   },
+];
+// Bedwars: Red left, Blue right
+const SPAWNS_BW = {
+  red:  [{x:60,y:300,dir:'right'},{x:60,y:160,dir:'right'},{x:60,y:440,dir:'right'}],
+  blue: [{x:740,y:300,dir:'left'},{x:740,y:160,dir:'left'},{x:740,y:440,dir:'left'}],
+};
+// Base positions for Bedwars
+const BASE_POS = {
+  red:  {x:40,  y:280},
+  blue: {x:720, y:280},
+};
 
-const myKeys = { up:false, down:false, left:false, right:false };
-let myShootTs = 0;
-let lastInputSend = 0;
-const hostInput = {};
-const hostLastShoot = {};
-let lastHostTick = 0;
+const TEAM_COLORS = { red:'#ef4444', blue:'#3b82f6' };
+const COLORS_FFA  = ['#22c55e','#ef4444','#3b82f6','#eab308','#a855f7','#f97316'];
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+let myId='', myName='', myClass='basic', myTeam='', roomCode='', isHost=false;
+let gameMode='ffa'; // 'ffa' | 'bedwars'
+let gameRunning=false, gameOverShown=false, roomRef=null, bulletSeq=0;
 
+const G = {
+  players:{}, bullets:{}, walls:[], swamps:[], mines:[], particles:[],
+  bases:{ red:{hp:BW_BASE_HP,maxHp:BW_BASE_HP}, blue:{hp:BW_BASE_HP,maxHp:BW_BASE_HP} }
+};
+const renderTanks={}, renderTargets={};
+
+// My local input state
+const myKeys = {up:false,down:false,left:false,right:false};
+let myShootTs=0, myAbilityTs={nuke:0,place:0,side:0}, lastAbilityNukeTs=0, lastAbilityPlaceTs=0;
+let lastInputSend=0;
+const hostInput={}, hostLastShoot={}, hostLastNuke={}, hostLastPlace={};
+let lastHostTick=0;
+
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+
+/* ══════════════════════════════════════════════
+   KEYBOARD
+══════════════════════════════════════════════ */
 window.addEventListener('keydown', e => {
   if (!gameRunning) return;
-  let handled = true;
-  switch (e.code) {
-    case 'ArrowUp': case 'KeyW': myKeys.up = true; break;
-    case 'ArrowDown': case 'KeyS': myKeys.down = true; break;
-    case 'ArrowLeft': case 'KeyA': myKeys.left = true; break;
-    case 'ArrowRight': case 'KeyD': myKeys.right = true; break;
+  let h=true;
+  switch(e.code){
+    case 'ArrowUp':   case 'KeyW': myKeys.up    = true; break;
+    case 'ArrowDown': case 'KeyS': myKeys.down  = true; break;
+    case 'ArrowLeft': case 'KeyA': myKeys.left  = true; break;
+    case 'ArrowRight':case 'KeyD': myKeys.right = true; break;
     case 'Space': {
-      const now = Date.now();
-      if (now - myShootTs >= SHOOT_CD) myShootTs = now;
+      const now=Date.now(); const cls=CLASSES[myClass];
+      if(now-myShootTs>=cls.shootCd) myShootTs=now;
       break;
     }
-    default: handled = false;
-  }
-  if (handled) e.preventDefault();
-});
-
-window.addEventListener('keyup', e => {
-  switch (e.code) {
-    case 'ArrowUp': case 'KeyW': myKeys.up = false; break;
-    case 'ArrowDown': case 'KeyS': myKeys.down = false; break;
-    case 'ArrowLeft': case 'KeyA': myKeys.left = false; break;
-    case 'ArrowRight': case 'KeyD': myKeys.right = false; break;
-  }
-});
-
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-}
-
-function showError(msg) {
-  const el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 4500);
-}
-
-function isSafeCell(cx, cy) {
-  const nearSpawn = SPAWNS.some(s => Math.abs(s.x - cx) < 105 && Math.abs(s.y - cy) < 105);
-  const inCenter = cx > 320 && cx < 480 && cy > 220 && cy < 380;
-  return !nearSpawn && !inCenter;
-}
-
-function shuffledCells() {
-  const cells = [];
-  for (let c = 1; c < W / CELL - 1; c++) {
-    for (let r = 1; r < H / CELL - 1; r++) {
-      const cx = c * CELL + CELL / 2;
-      const cy = r * CELL + CELL / 2;
-      if (isSafeCell(cx, cy)) cells.push({ x:c * CELL, y:r * CELL, cx, cy });
+    case 'KeyF': { // Heavy nuke
+      if(myClass==='heavy'){
+        const now=Date.now();
+        if(now-myAbilityTs.nuke>=(CLASSES.heavy.nukeCd||30000)) myAbilityTs.nuke=now;
+      }
+      break;
     }
+    case 'KeyQ': { // Scout left-side shot OR Engineer place mine
+      const now=Date.now();
+      if(myClass==='scout'&&now-myAbilityTs.side>=CLASSES.scout.shootCd)   myAbilityTs.side=now*10+1;
+      if(myClass==='engineer'&&now-myAbilityTs.place>=(CLASSES.engineer.placeCd||5000)) myAbilityTs.place=now*10+1; // odd = mine
+      break;
+    }
+    case 'KeyE': { // Scout right-side shot OR Engineer place wall
+      const now=Date.now();
+      if(myClass==='scout'&&now-myAbilityTs.side>=CLASSES.scout.shootCd)   myAbilityTs.side=now*10+2;
+      if(myClass==='engineer'&&now-myAbilityTs.place>=(CLASSES.engineer.placeCd||5000)) myAbilityTs.place=now*10+2; // even = wall
+      break;
+    }
+    default: h=false;
   }
-  for (let i = cells.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cells[i], cells[j]] = [cells[j], cells[i]];
+  if(h) e.preventDefault();
+});
+window.addEventListener('keyup', e => {
+  switch(e.code){
+    case 'ArrowUp':   case 'KeyW': myKeys.up    = false; break;
+    case 'ArrowDown': case 'KeyS': myKeys.down  = false; break;
+    case 'ArrowLeft': case 'KeyA': myKeys.left  = false; break;
+    case 'ArrowRight':case 'KeyD': myKeys.right = false; break;
+  }
+});
+
+/* ══════════════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════════════ */
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');
+}
+function showError(msg){
+  const el=document.getElementById('auth-error');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),4500);
+}
+
+/* ══════════════════════════════════════════════
+   MAP GENERATION
+══════════════════════════════════════════════ */
+function safeCell(cx,cy,mode){
+  const spawns = mode==='bedwars'
+    ? [...SPAWNS_BW.red,...SPAWNS_BW.blue]
+    : SPAWNS_FFA;
+  const nearSpawn = spawns.some(s=>Math.abs(s.x-cx)<110&&Math.abs(s.y-cy)<110);
+  const inCenter  = cx>300&&cx<500&&cy>220&&cy<380;
+  // Protect base zones in bedwars
+  const nearBase  = mode==='bedwars' && (cx<120||cx>680);
+  return !nearSpawn && !inCenter && !nearBase;
+}
+
+function shuffleCells(mode){
+  const cells=[];
+  for(let c=1;c<W/CELL-1;c++) for(let r=1;r<H/CELL-1;r++){
+    const cx=c*CELL+CELL/2, cy=r*CELL+CELL/2;
+    if(safeCell(cx,cy,mode)) cells.push({x:c*CELL,y:r*CELL});
+  }
+  for(let i=cells.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [cells[i],cells[j]]=[cells[j],cells[i]];
   }
   return cells;
 }
 
-function generateMap() {
-  const cells = shuffledCells();
-  const used = new Set();
-  const take = () => {
-    while (cells.length) {
-      const c = cells.pop();
-      const key = `${c.x}:${c.y}`;
-      if (!used.has(key)) {
-        used.add(key);
-        return c;
-      }
+function generateMap(mode){
+  const cells=shuffleCells(mode);
+  const used=new Set();
+  const take=()=>{
+    while(cells.length){
+      const c=cells.pop();
+      const k=`${c.x}:${c.y}`;
+      if(!used.has(k)){used.add(k);return c;}
     }
     return null;
   };
 
-  const walls = [];
-  for (let i = 0; i < 50; i++) {
-    const c = take();
-    if (!c) break;
-    const steel = Math.random() < 0.22;
-    walls.push({ x:c.x, y:c.y, hp:steel ? 99 : 1, maxHp:steel ? 99 : 1, type:steel ? 'steel' : 'brick' });
+  const walls=[], swamps=[], mines=[];
+  for(let i=0;i<48;i++){
+    const c=take(); if(!c) break;
+    const steel=Math.random()<0.22;
+    walls.push({x:c.x,y:c.y,hp:steel?99:1,maxHp:steel?99:1});
   }
-
-  const swamps = [];
-  for (let i = 0; i < 12; i++) {
-    const c = take();
-    if (!c) break;
-    swamps.push({ x:c.x, y:c.y, slow:SWAMP_SLOW });
+  for(let i=0;i<10;i++){
+    const c=take(); if(!c) break;
+    swamps.push({x:c.x,y:c.y});
   }
-
-  const mines = [];
-  for (let i = 0; i < 16; i++) {
-    const c = take();
-    if (!c) break;
-    mines.push({ x:c.x + CELL / 2, y:c.y + CELL / 2, r:MINE_RADIUS, damage:MINE_DAMAGE });
+  for(let i=0;i<14;i++){
+    const c=take(); if(!c) break;
+    mines.push({x:c.x+CELL/2,y:c.y+CELL/2,r:MINE_RADIUS,dmg:2});
   }
-
-  return { walls, swamps, mines };
+  return {walls,swamps,mines};
 }
 
-function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
-  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+/* ══════════════════════════════════════════════
+   COLLISION HELPERS
+══════════════════════════════════════════════ */
+function rectOverlap(ax,ay,aw,ah,bx,by,bw,bh){
+  return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
 }
-
-function hitsWall(nx, ny) {
-  const tx = nx - HALF;
-  const ty = ny - HALF;
-  const ts = HALF * 2;
-  for (const w of G.walls) {
-    if (!w) continue;
-    if (rectsOverlap(tx, ty, ts, ts, w.x + WALL_PAD, w.y + WALL_PAD, WALL_SIZE - WALL_PAD * 2, WALL_SIZE - WALL_PAD * 2)) return true;
+function hitsWall(nx,ny,half){
+  const s=half*2;
+  for(const w of G.walls){
+    if(!w) continue;
+    if(rectOverlap(nx-half,ny-half,s,s,w.x,w.y,WALL_SIZE,WALL_SIZE)) return true;
   }
   return false;
 }
-
-function bulletHitsWall(x, y, w) {
-  return x >= w.x + WALL_PAD && x <= w.x + WALL_SIZE - WALL_PAD && y >= w.y + WALL_PAD && y <= w.y + WALL_SIZE - WALL_PAD;
-}
-
-function outBounds(nx, ny) {
-  return nx - HALF < 0 || nx + HALF > W || ny - HALF < 0 || ny + HALF > H;
-}
-
-function inSwamp(x, y) {
-  for (const s of G.swamps) {
-    if (!s) continue;
-    if (x > s.x && x < s.x + CELL && y > s.y && y < s.y + CELL) return true;
+function hitsTank(nx,ny,half,skipPid){
+  for(const [pid,p] of Object.entries(G.players)){
+    if(pid===skipPid||p.dead) continue;
+    const ph=CLASSES[p.cls||'basic'].halfSize;
+    if(rectOverlap(nx-half,ny-half,half*2,half*2,p.x-ph,p.y-ph,ph*2,ph*2)) return true;
   }
   return false;
 }
+function outBounds(nx,ny,half){
+  return nx-half<0||nx+half>W||ny-half<0||ny+half>H;
+}
+function inSwamp(x,y){
+  for(const s of G.swamps){
+    if(!s) continue;
+    if(x>s.x&&x<s.x+CELL&&y>s.y&&y<s.y+CELL) return true;
+  }
+  return false;
+}
+function bulletHitsWall(x,y,w){
+  return x>=w.x&&x<=w.x+WALL_SIZE&&y>=w.y&&y<=w.y+WALL_SIZE;
+}
 
-function spawnExplosion(x, y, color, count) {
-  for (let i = 0; i < count; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = 1 + Math.random() * 4;
-    G.particles.push({
-      x, y, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp,
-      life:20 + Math.random() * 20, maxLife:40,
-      color:Math.random() < 0.4 ? '#fef9c3' : color,
-      size:2 + Math.random() * 4
+/* ══════════════════════════════════════════════
+   PARTICLES
+══════════════════════════════════════════════ */
+function spawnExplosion(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=1+Math.random()*4;
+    G.particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+      life:20+Math.random()*20,maxLife:40,
+      color:Math.random()<0.4?'#fef9c3':color,size:2+Math.random()*4});
+  }
+}
+function spawnDebris(x,y){
+  for(let i=0;i<8;i++){
+    const a=Math.random()*Math.PI*2,sp=1+Math.random()*2;
+    G.particles.push({x:x+20,y:y+20,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+      life:15+Math.random()*15,maxLife:30,color:'#92400e',size:2+Math.random()*3});
+  }
+}
+function tickParticles(){
+  for(let i=G.particles.length-1;i>=0;i--){
+    const p=G.particles[i];
+    p.x+=p.vx;p.y+=p.vy;p.vx*=0.96;p.vy*=0.96;p.life--;
+    if(p.life<=0) G.particles.splice(i,1);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   SOUNDS
+══════════════════════════════════════════════ */
+let audioCtx=null;
+function snd(type){
+  try{
+    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    const t=audioCtx.currentTime;
+    if(type==='shoot'){
+      o.type='square';o.frequency.setValueAtTime(600,t);o.frequency.exponentialRampToValueAtTime(200,t+0.08);
+      g.gain.setValueAtTime(0.08,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.08);o.start(t);o.stop(t+0.08);
+    }else if(type==='hit'){
+      o.type='sawtooth';o.frequency.setValueAtTime(300,t);o.frequency.exponentialRampToValueAtTime(80,t+0.15);
+      g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.start(t);o.stop(t+0.15);
+    }else if(type==='explode'){
+      o.type='sawtooth';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(30,t+0.35);
+      g.gain.setValueAtTime(0.15,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);o.start(t);o.stop(t+0.35);
+    }else if(type==='respawn'){
+      o.type='sine';o.frequency.setValueAtTime(400,t);o.frequency.exponentialRampToValueAtTime(800,t+0.12);
+      g.gain.setValueAtTime(0.06,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.12);o.start(t);o.stop(t+0.12);
+    }else if(type==='nuke'){
+      o.type='sawtooth';o.frequency.setValueAtTime(80,t);o.frequency.exponentialRampToValueAtTime(20,t+0.6);
+      g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.6);o.start(t);o.stop(t+0.6);
+    }
+  }catch(e){}
+}
+
+/* ══════════════════════════════════════════════
+   SEND INPUT (client → Firebase)
+══════════════════════════════════════════════ */
+function sendInput(){
+  if(!gameRunning||!myId||!roomCode) return;
+  const now=Date.now();
+  if(now-lastInputSend<INPUT_MS) return;
+  lastInputSend=now;
+  set(ref(db,`rooms/${roomCode}/input/${myId}`),{
+    u:myKeys.up, d:myKeys.down, l:myKeys.left, r:myKeys.right,
+    s:myShootTs,
+    nuke:myAbilityTs.nuke,
+    place:myAbilityTs.place,
+    side:myAbilityTs.side
+  });
+}
+
+/* ══════════════════════════════════════════════
+   CLASS SELECTION UI
+══════════════════════════════════════════════ */
+document.querySelectorAll('.cls-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    document.querySelectorAll('.cls-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    myClass=card.dataset.cls;
+  });
+});
+document.querySelectorAll('.mode-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('selected'));
+    tab.classList.add('selected');
+    gameMode=tab.dataset.mode;
+  });
+});
+
+/* ══════════════════════════════════════════════
+   AUTH — CREATE
+══════════════════════════════════════════════ */
+document.getElementById('btn-create').onclick = ()=>{
+  myName=document.getElementById('player-name').value.trim();
+  if(!myName) return showError('Введите имя!');
+  document.getElementById('mode-section').style.display='';
+  document.getElementById('classmode-status').textContent='';
+  showScreen('classmode');
+  // Confirm button creates room
+  document.getElementById('btn-confirm-class').onclick = async ()=>{
+    isHost=true; myId='p1';
+    roomCode=Math.random().toString(36).substring(2,7).toUpperCase();
+    roomRef=ref(db,'rooms/'+roomCode);
+    const map=generateMap(gameMode);
+    const sp=gameMode==='bedwars'?SPAWNS_BW.red[0]:SPAWNS_FFA[0];
+    const cls=CLASSES[myClass];
+    const teamVal=gameMode==='bedwars'?'red':'';
+    myTeam=teamVal;
+
+    await set(roomRef,{
+      status:'waiting', mode:gameMode,
+      walls:map.walls, swamps:map.swamps, mines:map.mines,
+      bases:{red:{hp:BW_BASE_HP,maxHp:BW_BASE_HP},blue:{hp:BW_BASE_HP,maxHp:BW_BASE_HP}},
+      bullets:{}, input:{},
+      players:{
+        p1:{name:myName,color:gameMode==='bedwars'?TEAM_COLORS.red:COLORS_FFA[0],
+            cls:myClass,team:teamVal,
+            x:sp.x,y:sp.y,dir:sp.dir,
+            hp:cls.hp,maxHp:cls.hp,lives:-1,score:0,dead:false,respawnAt:0}
+      }
     });
-  }
-}
-
-function spawnDebris(x, y) {
-  for (let i = 0; i < 8; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = 1 + Math.random() * 2;
-    G.particles.push({ x:x + 20, y:y + 20, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp, life:15 + Math.random() * 15, maxLife:30, color:'#92400e', size:2 + Math.random() * 3 });
-  }
-}
-
-function tickParticles() {
-  for (let i = G.particles.length - 1; i >= 0; i--) {
-    const p = G.particles[i];
-    p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life--;
-    if (p.life <= 0) G.particles.splice(i, 1);
-  }
-}
-
-let audioCtx = null;
-function snd(type) {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    const t = audioCtx.currentTime;
-    if (type === 'shoot') {
-      o.type = 'square'; o.frequency.setValueAtTime(600, t); o.frequency.exponentialRampToValueAtTime(200, t + 0.08);
-      g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.08); o.start(t); o.stop(t + 0.08);
-    } else if (type === 'hit') {
-      o.type = 'sawtooth'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(80, t + 0.15);
-      g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.15); o.start(t); o.stop(t + 0.15);
-    } else if (type === 'explode') {
-      o.type = 'sawtooth'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(30, t + 0.35);
-      g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35); o.start(t); o.stop(t + 0.35);
-    } else if (type === 'respawn') {
-      o.type = 'sine'; o.frequency.setValueAtTime(400, t); o.frequency.exponentialRampToValueAtTime(800, t + 0.12);
-      g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12); o.start(t); o.stop(t + 0.12);
-    }
-  } catch(e) {}
-}
-
-function sendInput() {
-  if (!gameRunning || !myId || !roomCode) return;
-  const now = Date.now();
-  if (now - lastInputSend < INPUT_MS) return;
-  lastInputSend = now;
-  set(ref(db, `rooms/${roomCode}/input/${myId}`), { u:myKeys.up, d:myKeys.down, l:myKeys.left, r:myKeys.right, s:myShootTs });
-}
-
-document.getElementById('btn-create').onclick = async () => {
-  myName = document.getElementById('player-name').value.trim();
-  if (!myName) return showError('Введите имя!');
-
-  roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-  isHost = true;
-  myId = 'p1';
-  roomRef = ref(db, 'rooms/' + roomCode);
-  const sp = SPAWNS[0];
-  const map = generateMap();
-
-  await set(roomRef, {
-    status:'waiting',
-    walls:map.walls,
-    swamps:map.swamps,
-    mines:map.mines,
-    bullets:{},
-    input:{},
-    players:{
-      p1:{ name:myName, color:COLORS[0], x:sp.x, y:sp.y, dir:sp.dir, hp:MAX_HP, lives:MAX_LIVES, score:0, dead:false, respawnAt:0 }
-    }
-  });
-  onDisconnect(roomRef).remove();
-
-  onValue(ref(db, `rooms/${roomCode}/input`), snap => {
-    const data = snap.val();
-    if (!data) return;
-    for (const [pid, inp] of Object.entries(data)) if (inp) hostInput[pid] = inp;
-  });
-
-  openLobby();
+    onDisconnect(roomRef).remove();
+    onValue(ref(db,`rooms/${roomCode}/input`),snap=>{
+      const d=snap.val(); if(!d) return;
+      for(const [pid,inp] of Object.entries(d)) if(inp) hostInput[pid]=inp;
+    });
+    openLobby();
+  };
 };
 
-document.getElementById('btn-join').onclick = async () => {
-  myName = document.getElementById('player-name').value.trim();
-  const code = document.getElementById('room-code-input').value.toUpperCase().trim();
-  if (!myName) return showError('Введите имя!');
-  if (code.length !== 5) return showError('Код - ровно 5 символов!');
+/* ══════════════════════════════════════════════
+   AUTH — JOIN
+══════════════════════════════════════════════ */
+document.getElementById('btn-join').onclick = ()=>{
+  myName=document.getElementById('player-name').value.trim();
+  const code=document.getElementById('room-code-input').value.toUpperCase().trim();
+  if(!myName) return showError('Введите имя!');
+  if(code.length!==5) return showError('Код — ровно 5 символов!');
+  roomCode=code;
+  document.getElementById('mode-section').style.display='none';
+  document.getElementById('classmode-status').textContent='Выберите класс и нажмите Готово';
+  showScreen('classmode');
 
-  roomCode = code;
-  roomRef = ref(db, 'rooms/' + roomCode);
-  const snap = await get(roomRef);
-  const data = snap.val();
-  if (!data) return showError('Комната не найдена!');
-  if (data.status === 'playing') return showError('Игра уже идет!');
+  document.getElementById('btn-confirm-class').onclick = async ()=>{
+    roomRef=ref(db,'rooms/'+roomCode);
+    const snap=await get(roomRef);
+    const data=snap.val();
+    if(!data)                     return showError('Комната не найдена!');
+    if(data.status==='playing')   return showError('Игра уже идёт!');
+    const pKeys=Object.keys(data.players||{});
+    if(pKeys.length>=6)           return showError('Комната заполнена!');
 
-  const pKeys = Object.keys(data.players || {});
-  if (pKeys.length >= 6) return showError('Комната заполнена (6/6)!');
+    const idx=pKeys.length;
+    myId='p'+(idx+1);
+    gameMode=data.mode||'ffa';
 
-  const idx = pKeys.length;
-  myId = 'p' + (idx + 1);
-  const sp = SPAWNS[idx < SPAWNS.length ? idx : 0];
+    // Assign team in bedwars: odd = red, even = blue
+    let team='';
+    if(gameMode==='bedwars'){
+      team = idx%2===0?'red':'blue';
+      myTeam=team;
+    }
+    const teamSpawns=gameMode==='bedwars'?SPAWNS_BW[team]:SPAWNS_FFA;
+    const spIdx=gameMode==='bedwars'?(Math.floor(idx/2)%3):(idx<SPAWNS_FFA.length?idx:0);
+    const sp=gameMode==='bedwars'?teamSpawns[spIdx]:SPAWNS_FFA[spIdx];
+    const cls=CLASSES[myClass];
+    const col=gameMode==='bedwars'?TEAM_COLORS[team]:COLORS_FFA[idx%COLORS_FFA.length];
 
-  await update(ref(db, `rooms/${roomCode}/players`), {
-    [myId]:{ name:myName, color:COLORS[idx], x:sp.x, y:sp.y, dir:sp.dir, hp:MAX_HP, lives:MAX_LIVES, score:0, dead:false, respawnAt:0 }
-  });
-  onDisconnect(ref(db, `rooms/${roomCode}/players/${myId}`)).remove();
-  openLobby();
+    await update(ref(db,`rooms/${roomCode}/players`),{
+      [myId]:{name:myName,color:col,cls:myClass,team,
+              x:sp.x,y:sp.y,dir:sp.dir,
+              hp:cls.hp,maxHp:cls.hp,lives:-1,score:0,dead:false,respawnAt:0}
+    });
+    onDisconnect(ref(db,`rooms/${roomCode}/players/${myId}`)).remove();
+    openLobby();
+  };
 };
 
-function openLobby() {
-  document.getElementById('display-room-code').textContent = roomCode;
-  document.getElementById('ui-room').textContent = roomCode;
+/* ══════════════════════════════════════════════
+   LOBBY
+══════════════════════════════════════════════ */
+function openLobby(){
+  document.getElementById('display-room-code').textContent=roomCode;
+  document.getElementById('ui-room').textContent=roomCode;
   showScreen('lobby');
-  document.getElementById('host-controls').style.display = isHost ? '' : 'none';
-  document.getElementById('student-wait').style.display = isHost ? 'none' : '';
+  document.getElementById('host-controls').style.display=isHost?'':'none';
+  document.getElementById('student-wait').style.display=isHost?'none':'';
 
-  onValue(roomRef, snap => {
-    const data = snap.val();
-    if (!data) return;
+  onValue(roomRef,snap=>{
+    const data=snap.val(); if(!data) return;
 
-    if (!(isHost && gameRunning)) {
-      const newPlayers = data.players || {};
-      // For non-host clients: initialize render targets and render positions
-      for (const [pid, p] of Object.entries(newPlayers)) {
-        if (!renderTargets[pid]) {
-          renderTargets[pid] = { x: p.x, y: p.y };
-          renderTanks[pid] = { x: p.x, y: p.y };
-        } else {
-          renderTargets[pid].x = p.x;
-          renderTargets[pid].y = p.y;
-        }
+    if(!(isHost&&gameRunning)){
+      const np=data.players||{};
+      for(const [pid,p] of Object.entries(np)){
+        if(!renderTargets[pid]){renderTargets[pid]={x:p.x,y:p.y};renderTanks[pid]={x:p.x,y:p.y};}
+        else{renderTargets[pid].x=p.x;renderTargets[pid].y=p.y;}
       }
-      // Remove tanks that left
-      for (const pid of Object.keys(renderTargets)) {
-        if (!newPlayers[pid]) { delete renderTargets[pid]; delete renderTanks[pid]; }
-      }
-      G.players = newPlayers;
-      G.walls = data.walls || [];
-      G.swamps = data.swamps || [];
-      G.mines = data.mines || [];
-      G.bullets = data.bullets || {};
+      for(const pid of Object.keys(renderTargets))
+        if(!np[pid]){delete renderTargets[pid];delete renderTanks[pid];}
+      G.players=np;
+      G.walls  =data.walls  ||[];
+      G.swamps =data.swamps ||[];
+      G.mines  =data.mines  ||[];
+      G.bullets=data.bullets||{};
+      if(data.bases) G.bases=data.bases;
+      if(data.mode)  gameMode=data.mode;
     }
 
-    const entries = Object.entries(data.players || {});
-    document.getElementById('player-count-badge').textContent = `${entries.length}/6`;
-    document.getElementById('player-list').innerHTML = entries.map(([id,p]) => `
+    // Lobby UI
+    const entries=Object.entries(data.players||{});
+    document.getElementById('player-count-badge').textContent=`${entries.length}/6`;
+    document.getElementById('player-list').innerHTML=entries.map(([id,p])=>`
       <div class="pcard">
         <div class="dot" style="background:${p.color}"></div>
         <span style="font-weight:600;">${p.name}</span>
-        ${id === myId ? '<span class="tag tag-me">ВЫ</span>' : ''}
-        ${id === 'p1' ? '<span class="tag tag-host">Учитель</span>' : ''}
-      </div>
-    `).join('');
+        <span style="font-size:10px;color:#64748b;margin-left:4px;">${CLASSES[p.cls||'basic']?.icon||''} ${CLASSES[p.cls||'basic']?.name||''}</span>
+        ${p.team?`<span style="font-size:10px;margin-left:4px;">${p.team==='red'?'🔴':'🔵'}</span>`:''}
+        ${id===myId?'<span class="tag tag-me">ВЫ</span>':''}
+        ${id==='p1'?'<span class="tag tag-host">👑</span>':''}
+      </div>`).join('');
 
-    if (isHost) {
-      document.getElementById('btn-start-game').disabled = entries.length < 2;
-      document.getElementById('lobby-status').textContent = entries.length < 2 ? 'Ждем хотя бы одного ученика...' : `Готово! ${entries.length} игроков`;
+    if(isHost){
+      document.getElementById('btn-start-game').disabled=entries.length<2;
+      document.getElementById('lobby-status').textContent=
+        entries.length<2?'⏳ Ждём ещё игроков…':`✅ ${entries.length} игроков · режим ${gameMode.toUpperCase()}`;
     }
 
-    if (data.status === 'playing' && !gameRunning) {
-      gameRunning = true;
-      gameOverShown = false;
-      G.particles = [];
-      if (isHost) {
-        G.players = JSON.parse(JSON.stringify(data.players || {}));
-        G.walls = JSON.parse(JSON.stringify(data.walls || []));
-        G.swamps = JSON.parse(JSON.stringify(data.swamps || []));
-        G.mines = JSON.parse(JSON.stringify(data.mines || []));
-        G.bullets = {};
-      } else {
-        // Initialize interpolation for non-host
-        const pl = data.players || {};
-        for (const [pid, p] of Object.entries(pl)) {
-          renderTargets[pid] = { x: p.x, y: p.y };
-          renderTanks[pid] = { x: p.x, y: p.y };
+    if(data.status==='playing'&&!gameRunning){
+      gameMode=data.mode||'ffa';
+      gameRunning=true; gameOverShown=false; G.particles=[];
+      if(isHost){
+        G.players=JSON.parse(JSON.stringify(data.players||{}));
+        G.walls  =JSON.parse(JSON.stringify(data.walls  ||[]));
+        G.swamps =JSON.parse(JSON.stringify(data.swamps ||[]));
+        G.mines  =JSON.parse(JSON.stringify(data.mines  ||[]));
+        G.bullets={};
+        G.bases  =JSON.parse(JSON.stringify(data.bases||
+          {red:{hp:BW_BASE_HP,maxHp:BW_BASE_HP},blue:{hp:BW_BASE_HP,maxHp:BW_BASE_HP}}));
+      }else{
+        const pl=data.players||{};
+        for(const [pid,p] of Object.entries(pl)){
+          renderTargets[pid]={x:p.x,y:p.y};
+          renderTanks[pid]={x:p.x,y:p.y};
         }
+        if(data.bases) G.bases=data.bases;
       }
+      // find my team from player data
+      const me=data.players?.[myId];
+      if(me) myTeam=me.team||'';
+      setupGameUI();
       showScreen('game');
       requestAnimationFrame(gameLoop);
     }
 
-    if (data.status === 'ended' && !gameOverShown) {
-      G.players = data.players || G.players;
-      showGameOver(data.winner);
+    if(data.status==='ended'&&!gameOverShown){
+      G.players=data.players||G.players;
+      showGameOver(data.winner,data.winnerTeam);
     }
   });
 }
 
-document.getElementById('btn-start-game').onclick = () => update(roomRef, { status:'playing' });
-document.getElementById('btn-menu').onclick = () => location.reload();
+function setupGameUI(){
+  const cls=CLASSES[myClass];
+  document.getElementById('ui-mode-badge').textContent=
+    gameMode==='ffa'?'💀 FFA':'🛏️ Bedwars';
 
-function gameLoop(ts) {
-  if (!gameRunning) return;
+  // Ability bar
+  const ab=document.getElementById('ability-bar');
+  document.getElementById('ab-nuke').style.display='none';
+  document.getElementById('ab-place').style.display='none';
+  document.getElementById('ab-side').style.display='none';
+  if(myClass==='heavy')    document.getElementById('ab-nuke').style.display='';
+  if(myClass==='engineer') document.getElementById('ab-place').style.display='';
+  if(myClass==='scout')    document.getElementById('ab-side').style.display='';
+
+  // Controls hint
+  let hint='WASD — движение · Пробел — огонь';
+  if(myClass==='heavy')    hint+=' · F — Ядерный удар (30с КД)';
+  if(myClass==='engineer') hint+=' · Q — Мина · E — Стена (5с КД)';
+  if(myClass==='scout')    hint+=' · Q — Выстрел влево · E — Выстрел вправо';
+  document.getElementById('controls-hint').textContent=hint;
+}
+
+document.getElementById('btn-start-game').onclick = ()=>update(roomRef,{status:'playing'});
+document.getElementById('btn-menu').onclick       = ()=>location.reload();
+
+/* ══════════════════════════════════════════════
+   GAME LOOP
+══════════════════════════════════════════════ */
+function gameLoop(ts){
+  if(!gameRunning) return;
   requestAnimationFrame(gameLoop);
   sendInput();
-  if (isHost) hostTick(ts);
+  if(isHost) hostTick(ts);
   tickParticles();
-  if (!isHost) interpolateTanks();
+  if(!isHost) interpolateTanks();
   render();
   updateHUD();
 }
 
-function damagePlayer(pid, damage, fb, now, killerId = null) {
-  const t = G.players[pid];
-  if (!t || t.dead) return;
-  const newHp = (t.hp || 1) - damage;
-  if (newHp <= 0) {
-    const nl = (t.lives || 1) - 1;
-    t.hp = 0; t.lives = nl; t.dead = true; t.respawnAt = nl > 0 ? now + RESPAWN_MS : 0;
-    fb[`players/${pid}/hp`] = 0;
-    fb[`players/${pid}/lives`] = nl;
-    fb[`players/${pid}/dead`] = true;
-    fb[`players/${pid}/respawnAt`] = t.respawnAt;
-    if (killerId && killerId !== pid && G.players[killerId]) {
-      G.players[killerId].score = (G.players[killerId].score || 0) + 1;
-      fb[`players/${killerId}/score`] = G.players[killerId].score;
+/* ══════════════════════════════════════════════
+   DAMAGE HELPER
+══════════════════════════════════════════════ */
+function damagePlayer(pid,dmg,fb,now,killerId=null){
+  const t=G.players[pid];
+  if(!t||t.dead) return;
+  const newHp=(t.hp||1)-dmg;
+  if(newHp<=0){
+    const canRespawn=canPlayerRespawn(pid);
+    t.hp=0; t.dead=true;
+    t.respawnAt=canRespawn?now+RESPAWN_MS:0;
+    fb[`players/${pid}/hp`]=0;
+    fb[`players/${pid}/dead`]=true;
+    fb[`players/${pid}/respawnAt`]=t.respawnAt;
+    if(killerId&&killerId!==pid&&G.players[killerId]){
+      G.players[killerId].score=(G.players[killerId].score||0)+1;
+      fb[`players/${killerId}/score`]=G.players[killerId].score;
     }
-    spawnExplosion(t.x, t.y, t.color || '#ff0000', 25);
+    spawnExplosion(t.x,t.y,t.color||'#ff0',25);
     snd('explode');
-  } else {
-    t.hp = newHp;
-    fb[`players/${pid}/hp`] = newHp;
-    spawnExplosion(t.x, t.y, '#fef9c3', 8);
+  }else{
+    t.hp=newHp;
+    fb[`players/${pid}/hp`]=newHp;
+    spawnExplosion(t.x,t.y,'#fef9c3',8);
     snd('hit');
   }
 }
 
-function hostTick(ts) {
-  if (ts - lastHostTick < HOST_TICK) return;
-  lastHostTick = ts;
+function canPlayerRespawn(pid){
+  const p=G.players[pid];
+  if(!p) return false;
+  if(gameMode==='ffa') return true; // infinite respawn in FFA
+  // Bedwars: can respawn only if own base alive
+  const base=G.bases[p.team||'red'];
+  return base&&base.hp>0;
+}
 
-  const now = Date.now();
-  const fb = {};
-  let minesDirty = false;
+function getSpawnFor(pid){
+  const p=G.players[pid];
+  const idx=parseInt(pid.replace('p',''),10)-1;
+  if(gameMode==='bedwars'){
+    const team=p.team||'red';
+    const teamSpawns=SPAWNS_BW[team];
+    return teamSpawns[idx%teamSpawns.length]||teamSpawns[0];
+  }
+  return SPAWNS_FFA[idx<SPAWNS_FFA.length?idx:0];
+}
 
-  for (const [pid, p] of Object.entries(G.players)) {
-    if (p.dead) continue;
-    const inp = hostInput[pid];
-    if (!inp) continue;
+/* ══════════════════════════════════════════════
+   HOST TICK
+══════════════════════════════════════════════ */
+function hostTick(ts){
+  if(ts-lastHostTick<HOST_TICK) return;
+  lastHostTick=ts;
+  const now=Date.now();
+  const fb={};
+  let minesDirty=false, wallsDirty=false;
 
-    let pSpeed = (pid === 'p1') ? SPEED : SPEED * 1.25;
-    if (inSwamp(p.x, p.y)) pSpeed *= SWAMP_SLOW;
+  /* ── 1. Move tanks ── */
+  for(const [pid,p] of Object.entries(G.players)){
+    if(p.dead) continue;
+    const inp=hostInput[pid]; if(!inp) continue;
+    const cls=CLASSES[p.cls||'basic'];
+    const half=cls.halfSize;
 
-    let nx = p.x;
-    let ny = p.y;
-    let ndir = p.dir;
-    let moved = false;
-    if (inp.u) { ny -= pSpeed; ndir = 'up'; moved = true; }
-    else if (inp.d) { ny += pSpeed; ndir = 'down'; moved = true; }
-    else if (inp.l) { nx -= pSpeed; ndir = 'left'; moved = true; }
-    else if (inp.r) { nx += pSpeed; ndir = 'right'; moved = true; }
+    let spd=cls.speed;
+    if(inSwamp(p.x,p.y)) spd*=SWAMP_SLOW;
 
-    if (moved && !outBounds(nx, ny) && !hitsWall(nx, ny)) {
-      p.x = nx; p.y = ny; p.dir = ndir;
-      fb[`players/${pid}/x`] = nx;
-      fb[`players/${pid}/y`] = ny;
-      fb[`players/${pid}/dir`] = ndir;
-    } else if (moved && p.dir !== ndir) {
-      p.dir = ndir;
-      fb[`players/${pid}/dir`] = ndir;
+    let nx=p.x,ny=p.y,ndir=p.dir,moved=false;
+    if(inp.u){ny-=spd;ndir='up';   moved=true;}
+    else if(inp.d){ny+=spd;ndir='down'; moved=true;}
+    else if(inp.l){nx-=spd;ndir='left'; moved=true;}
+    else if(inp.r){nx+=spd;ndir='right';moved=true;}
+
+    if(moved&&!outBounds(nx,ny,half)&&!hitsWall(nx,ny,half)&&!hitsTank(nx,ny,half,pid)){
+      p.x=nx;p.y=ny;p.dir=ndir;
+      fb[`players/${pid}/x`]=nx;
+      fb[`players/${pid}/y`]=ny;
+      fb[`players/${pid}/dir`]=ndir;
+    }else if(moved&&p.dir!==ndir){
+      p.dir=ndir;fb[`players/${pid}/dir`]=ndir;
     }
 
-    for (let i = 0; i < G.mines.length; i++) {
-      const m = G.mines[i];
-      if (!m) continue;
-      if (Math.hypot(p.x - m.x, p.y - m.y) < HALF + (m.r || MINE_RADIUS) * 0.65) {
-        G.mines[i] = null;
-        minesDirty = true;
-        damagePlayer(pid, m.damage || MINE_DAMAGE, fb, now);
-        spawnExplosion(m.x, m.y, '#f97316', 22);
+    /* ── Mine collision ── */
+    for(let i=0;i<G.mines.length;i++){
+      const m=G.mines[i]; if(!m) continue;
+      if(Math.hypot(p.x-m.x,p.y-m.y)<half+(m.r||MINE_RADIUS)*0.65){
+        G.mines[i]=null; minesDirty=true;
+        let mineDmg=(m.dmg||2);
+        if(cls.mineReduction) mineDmg=Math.max(0,mineDmg-cls.mineReduction);
+        if(mineDmg>0) damagePlayer(pid,mineDmg,fb,now);
+        spawnExplosion(m.x,m.y,'#f97316',22);
         break;
       }
     }
 
-    if (inp.s && inp.s > (hostLastShoot[pid] || 0) && !p.dead) {
-      hostLastShoot[pid] = inp.s;
-      const off = HALF + 14;
-      let bx = p.x;
-      let by = p.y;
-      if (p.dir === 'up') by -= off;
-      else if (p.dir === 'down') by += off;
-      else if (p.dir === 'left') bx -= off;
-      else bx += off;
+    /* ── Main shoot ── */
+    if(inp.s&&inp.s>(hostLastShoot[pid]||0)&&!p.dead){
+      hostLastShoot[pid]=inp.s;
+      fireShot(pid,p,p.dir,cls,fb,now);
+    }
 
-      const bId = 'b' + (++bulletSeq);
-      const bullet = { x:bx, y:by, dir:p.dir, owner:pid };
-      G.bullets[bId] = bullet;
-      fb[`bullets/${bId}`] = bullet;
-      snd('shoot');
+    /* ── Scout side shots ── */
+    if(p.cls==='scout'&&inp.side&&inp.side>(hostLastShoot[pid+'_side']||0)&&!p.dead){
+      hostLastShoot[pid+'_side']=inp.side;
+      const sideDir=(inp.side%10)===1?sideLeft(p.dir):sideRight(p.dir);
+      fireShot(pid,p,sideDir,cls,fb,now);
+    }
+
+    /* ── Heavy NUKE ── */
+    if(p.cls==='heavy'&&inp.nuke&&inp.nuke>(hostLastNuke[pid]||0)&&!p.dead){
+      hostLastNuke[pid]=inp.nuke;
+      doNuke(pid,p,fb,now);
+      minesDirty=true; wallsDirty=true;
+    }
+
+    /* ── Engineer place ── */
+    if(p.cls==='engineer'&&inp.place&&inp.place>(hostLastPlace[pid]||0)&&!p.dead){
+      hostLastPlace[pid]=inp.place;
+      const placeMine=(inp.place%10)===1;
+      doEngineerPlace(pid,p,placeMine,fb);
+      if(placeMine) minesDirty=true; else wallsDirty=true;
     }
   }
 
-  for (const [pid, p] of Object.entries(G.players)) {
-    if (p.dead && p.lives > 0 && p.respawnAt > 0 && now >= p.respawnAt) {
-      const idx = parseInt(pid.replace('p', ''), 10) - 1;
-      const sp = SPAWNS[idx < SPAWNS.length ? idx : 0];
-      p.dead = false; p.hp = MAX_HP; p.x = sp.x; p.y = sp.y; p.dir = sp.dir; p.respawnAt = 0;
-      fb[`players/${pid}/dead`] = false;
-      fb[`players/${pid}/hp`] = MAX_HP;
-      fb[`players/${pid}/x`] = sp.x;
-      fb[`players/${pid}/y`] = sp.y;
-      fb[`players/${pid}/dir`] = sp.dir;
-      fb[`players/${pid}/respawnAt`] = 0;
+  /* ── 2. Respawn ── */
+  for(const [pid,p] of Object.entries(G.players)){
+    if(p.dead&&p.respawnAt>0&&now>=p.respawnAt){
+      const sp=getSpawnFor(pid);
+      const cls=CLASSES[p.cls||'basic'];
+      p.dead=false;p.hp=cls.hp;p.x=sp.x;p.y=sp.y;p.dir=sp.dir;p.respawnAt=0;
+      fb[`players/${pid}/dead`]=false;
+      fb[`players/${pid}/hp`]=cls.hp;
+      fb[`players/${pid}/x`]=sp.x;
+      fb[`players/${pid}/y`]=sp.y;
+      fb[`players/${pid}/dir`]=sp.dir;
+      fb[`players/${pid}/respawnAt`]=0;
       snd('respawn');
     }
   }
 
-  let wallsDirty = false;
-  const bulletsToDelete = [];
+  /* ── 3. Bullets ── */
+  const toDelete=[];
+  for(const [bId,b] of Object.entries(G.bullets)){
+    if(!b){toDelete.push(bId);continue;}
+    let{x,y,dir,owner,spd:bs,dmg:bdmg}=b;
+    bs=bs||BSPEED;
+    if(dir==='up')    y-=bs;
+    else if(dir==='down')  y+=bs;
+    else if(dir==='left')  x-=bs;
+    else              x+=bs;
 
-  for (const [bId, b] of Object.entries(G.bullets)) {
-    if (!b) { bulletsToDelete.push(bId); continue; }
-    let { x, y, dir, owner } = b;
-    const bSpeed = (owner === 'p1') ? BSPEED : BSPEED * 1.35;
-    if (dir === 'up') y -= bSpeed;
-    else if (dir === 'down') y += bSpeed;
-    else if (dir === 'left') x -= bSpeed;
-    else x += bSpeed;
+    if(x<0||x>W||y<0||y>H){toDelete.push(bId);continue;}
 
-    if (x < 0 || x > W || y < 0 || y > H) {
-      bulletsToDelete.push(bId);
-      continue;
+    // Wall hit
+    let hitWall=false;
+    for(let i=0;i<G.walls.length;i++){
+      const w=G.walls[i]; if(!w) continue;
+      if(bulletHitsWall(x,y,w)){
+        if(w.hp<99){w.hp--;if(w.hp<=0){G.walls[i]=null;spawnDebris(w.x,w.y);}}
+        hitWall=true; wallsDirty=true; break;
+      }
     }
+    if(hitWall){toDelete.push(bId);continue;}
 
-    let hitWall = false;
-    for (let i = 0; i < G.walls.length; i++) {
-      const w = G.walls[i];
-      if (!w) continue;
-      if (bulletHitsWall(x, y, w)) {
-        if (w.hp < 99) {
-          w.hp--;
-          if (w.hp <= 0) { G.walls[i] = null; spawnDebris(w.x, w.y); }
+    // Mine hit
+    let hitMine=false;
+    for(let i=0;i<G.mines.length;i++){
+      const m=G.mines[i]; if(!m) continue;
+      if(Math.hypot(x-m.x,y-m.y)<(m.r||MINE_RADIUS)){
+        G.mines[i]=null; minesDirty=true; hitMine=true;
+        spawnExplosion(m.x,m.y,'#f97316',18); snd('explode'); break;
+      }
+    }
+    if(hitMine){toDelete.push(bId);continue;}
+
+    // Bedwars: bullet vs enemy base
+    if(gameMode==='bedwars'&&owner){
+      const shooter=G.players[owner];
+      if(shooter){
+        const oteam=shooter.team==='red'?'blue':'red';
+        const bpos=BASE_POS[oteam];
+        if(x>=bpos.x&&x<=bpos.x+40&&y>=bpos.y&&y<=bpos.y+40){
+          const base=G.bases[oteam];
+          if(base&&base.hp>0){
+            base.hp=Math.max(0,base.hp-(bdmg||1));
+            fb[`bases/${oteam}/hp`]=base.hp;
+            spawnExplosion(bpos.x+20,bpos.y+20,'#fbbf24',12);
+            snd('hit');
+          }
+          toDelete.push(bId); continue;
         }
-        hitWall = true;
-        wallsDirty = true;
-        break;
       }
     }
-    if (hitWall) { bulletsToDelete.push(bId); continue; }
 
-    for (let i = 0; i < G.mines.length; i++) {
-      const m = G.mines[i];
-      if (!m) continue;
-      if (Math.hypot(x - m.x, y - m.y) < (m.r || MINE_RADIUS)) {
-        G.mines[i] = null;
-        minesDirty = true;
-        bulletsToDelete.push(bId);
-        spawnExplosion(m.x, m.y, '#f97316', 18);
-        snd('explode');
-        break;
-      }
+    // Tank hit
+    let hitPid=null;
+    for(const [pid,p] of Object.entries(G.players)){
+      if(pid===owner||p.dead) continue;
+      // FFA: can hit anyone; Bedwars: only enemy team
+      if(gameMode==='bedwars'&&G.players[owner]?.team===p.team) continue;
+      const ph=CLASSES[p.cls||'basic'].halfSize;
+      if(Math.hypot(p.x-x,p.y-y)<ph+5){hitPid=pid;break;}
     }
-    if (bulletsToDelete.includes(bId)) continue;
-
-    let hitPid = null;
-    for (const [pid, p] of Object.entries(G.players)) {
-      if (pid === owner || p.dead) continue;
-      if (Math.hypot(p.x - x, p.y - y) < HALF + 6) { hitPid = pid; break; }
-    }
-    if (hitPid) {
-      damagePlayer(hitPid, 1, fb, now, owner);
-      bulletsToDelete.push(bId);
-      continue;
+    if(hitPid){
+      damagePlayer(hitPid,bdmg||1,fb,now,owner);
+      toDelete.push(bId); continue;
     }
 
-    b.x = x; b.y = y;
-    fb[`bullets/${bId}`] = { x, y, dir, owner };
+    b.x=x;b.y=y;
+    fb[`bullets/${bId}`]={x,y,dir,owner,spd:bs,dmg:bdmg||1};
   }
+  for(const bId of toDelete){delete G.bullets[bId];fb[`bullets/${bId}`]=null;}
 
-  for (const bId of bulletsToDelete) {
-    delete G.bullets[bId];
-    fb[`bullets/${bId}`] = null;
-  }
+  if(wallsDirty){G.walls=G.walls.filter(Boolean);fb.walls=G.walls;}
+  if(minesDirty){G.mines=G.mines.filter(Boolean);fb.mines=G.mines;}
 
-  if (wallsDirty) {
-    G.walls = G.walls.filter(Boolean);
-    fb.walls = G.walls;
-  }
-  if (minesDirty) {
-    G.mines = G.mines.filter(Boolean);
-    fb.mines = G.mines;
-  }
-
-  if (Object.keys(fb).length > 0) update(ref(db, `rooms/${roomCode}`), fb);
+  if(Object.keys(fb).length>0) update(ref(db,`rooms/${roomCode}`),fb);
   checkEndGame();
 }
 
-// Smooth interpolation for non-host clients: move renderTanks towards renderTargets
-function interpolateTanks() {
-  for (const [pid, p] of Object.entries(G.players)) {
-    if (pid === myId) continue; // our own tank is controlled locally, no interpolation needed
-    if (!renderTanks[pid] || !renderTargets[pid] || p.dead) continue;
-    const rt = renderTanks[pid];
-    const tg = renderTargets[pid];
-    // Lerp towards target
-    rt.x += (tg.x - rt.x) * INTERP_SPEED;
-    rt.y += (tg.y - rt.y) * INTERP_SPEED;
-    // Snap if very close
-    if (Math.abs(rt.x - tg.x) < 0.3) rt.x = tg.x;
-    if (Math.abs(rt.y - tg.y) < 0.3) rt.y = tg.y;
-    // Override the player's x,y for rendering only (we draw from G.players)
-    p._renderX = rt.x;
-    p._renderY = rt.y;
+/* ── Fire a shot helper ── */
+function fireShot(pid,p,dir,cls,fb,now){
+  const half=cls.halfSize;
+  const off=half+14;
+  let bx=p.x,by=p.y;
+  if(dir==='up')    by-=off;
+  else if(dir==='down')  by+=off;
+  else if(dir==='left')  bx-=off;
+  else              bx+=off;
+  const bId='b'+(++bulletSeq);
+  const bullet={x:bx,y:by,dir,owner:pid,spd:BSPEED,dmg:cls.dmg||1};
+  G.bullets[bId]=bullet;
+  fb[`bullets/${bId}`]=bullet;
+  snd('shoot');
+}
+
+/* ── Side directions for Scout ── */
+function sideLeft(dir){
+  return {up:'left',left:'down',down:'right',right:'up'}[dir]||'left';
+}
+function sideRight(dir){
+  return {up:'right',right:'down',down:'left',left:'up'}[dir]||'right';
+}
+
+/* ── Heavy Nuke ── */
+function doNuke(pid,p,fb,now){
+  snd('nuke');
+  // Nuke pattern: O=center, b=affected cells (1 step + diagonal = cross + one step out)
+  // xxbxx / xbbbx / bbObb / xbbbx / xxbxx  in 40px increments
+  const offsets=[
+    {dx:0,dy:0},
+    {dx:-1,dy:0},{dx:1,dy:0},{dx:0,dy:-1},{dx:0,dy:1},
+    {dx:-2,dy:0},{dx:2,dy:0},{dx:0,dy:-2},{dx:0,dy:2},
+    {dx:-1,dy:-1},{dx:1,dy:-1},{dx:-1,dy:1},{dx:1,dy:1}
+  ];
+  const cx=Math.round(p.x/CELL)*CELL;
+  const cy=Math.round(p.y/CELL)*CELL;
+
+  // Destroy walls in radius
+  for(let i=0;i<G.walls.length;i++){
+    const w=G.walls[i]; if(!w) continue;
+    for(const o of offsets){
+      if(w.x===cx+o.dx*CELL&&w.y===cy+o.dy*CELL){
+        spawnDebris(w.x,w.y);
+        G.walls[i]=null; break;
+      }
+    }
+  }
+  // Destroy swamps
+  for(let i=0;i<G.swamps.length;i++){
+    const s=G.swamps[i]; if(!s) continue;
+    for(const o of offsets){
+      if(s.x===cx+o.dx*CELL&&s.y===cy+o.dy*CELL){G.swamps[i]=null;break;}
+    }
+  }
+  // Destroy mines
+  for(let i=0;i<G.mines.length;i++){
+    const m=G.mines[i]; if(!m) continue;
+    let inZone=false;
+    for(const o of offsets){
+      const zx=cx+o.dx*CELL+CELL/2, zy=cy+o.dy*CELL+CELL/2;
+      if(Math.hypot(m.x-zx,m.y-zy)<CELL) {inZone=true;break;}
+    }
+    if(inZone){spawnExplosion(m.x,m.y,'#f97316',10);G.mines[i]=null;}
+  }
+
+  // Damage enemies in radius
+  for(const [tpid,tp] of Object.entries(G.players)){
+    if(tpid===pid||tp.dead) continue;
+    if(gameMode==='bedwars'&&G.players[pid].team===tp.team) continue;
+    let inZone=false;
+    for(const o of offsets){
+      if(Math.hypot(tp.x-(p.x+o.dx*CELL),tp.y-(p.y+o.dy*CELL))<CELL*0.8){inZone=true;break;}
+    }
+    if(inZone) damagePlayer(tpid,2,fb,now,pid);
+  }
+
+  // Damage enemy BASE in bedwars
+  if(gameMode==='bedwars'){
+    const oteam=G.players[pid].team==='red'?'blue':'red';
+    const bpos=BASE_POS[oteam];
+    for(const o of offsets){
+      const zx=cx+o.dx*CELL+CELL/2, zy=cy+o.dy*CELL+CELL/2;
+      if(Math.hypot(bpos.x+20-zx,bpos.y+20-zy)<CELL*1.2){
+        const base=G.bases[oteam];
+        if(base&&base.hp>0){ base.hp=Math.max(0,base.hp-8); fb[`bases/${oteam}/hp`]=base.hp; }
+        break;
+      }
+    }
+  }
+
+  spawnExplosion(p.x,p.y,'#f97316',40);
+}
+
+/* ── Engineer place ── */
+function doEngineerPlace(pid,p,placeMine,fb){
+  // Place in front of tank
+  const half=CLASSES.engineer.halfSize;
+  const off=half+CELL/2+4;
+  let px=p.x,py=p.y;
+  if(p.dir==='up')    py-=off;
+  else if(p.dir==='down')  py+=off;
+  else if(p.dir==='left')  px-=off;
+  else              px+=off;
+  const cx=Math.floor(px/CELL)*CELL;
+  const cy=Math.floor(py/CELL)*CELL;
+  // Check not occupied
+  const occupied=G.walls.some(w=>w&&w.x===cx&&w.y===cy)
+               ||G.swamps.some(s=>s&&s.x===cx&&s.y===cy);
+  if(occupied) return;
+  if(cx<0||cy<0||cx+CELL>W||cy+CELL>H) return;
+
+  if(placeMine){
+    const mine={x:cx+CELL/2,y:cy+CELL/2,r:MINE_RADIUS,dmg:2};
+    G.mines.push(mine);
+    fb.mines=G.mines.filter(Boolean);
+  }else{
+    const wall={x:cx,y:cy,hp:1,maxHp:1};
+    G.walls.push(wall);
+    fb.walls=G.walls.filter(Boolean);
   }
 }
 
-function checkEndGame() {
-  if (gameOverShown) return;
-  const all = Object.values(G.players);
-  if (all.length < 2) return;
-  const alive = all.filter(p => p.lives > 0);
-  if (alive.length > 1) return;
-
-  gameRunning = false;
-  gameOverShown = true;
-  const winner = alive[0] || null;
-  update(roomRef, { status:'ended', winner:winner ? winner.name : null });
-  showGameOver(winner ? winner.name : null);
+/* ── Interpolation (clients) ── */
+function interpolateTanks(){
+  for(const [pid,p] of Object.entries(G.players)){
+    if(pid===myId) continue;
+    if(!renderTanks[pid]||!renderTargets[pid]||p.dead) continue;
+    const rt=renderTanks[pid],tg=renderTargets[pid];
+    rt.x+=(tg.x-rt.x)*INTERP_SPEED;
+    rt.y+=(tg.y-rt.y)*INTERP_SPEED;
+    if(Math.abs(rt.x-tg.x)<0.3) rt.x=tg.x;
+    if(Math.abs(rt.y-tg.y)<0.3) rt.y=tg.y;
+    p._renderX=rt.x; p._renderY=rt.y;
+  }
 }
 
-function showGameOver(winnerName) {
-  gameRunning = false;
-  gameOverShown = true;
-  const isWin = winnerName && winnerName === myName;
-  document.getElementById('overlay-icon').textContent = isWin ? '🏆' : '💀';
-  document.getElementById('overlay-title').textContent = isWin ? 'ПОБЕДА!' : 'КОНЕЦ БОЯ';
-  document.getElementById('overlay-winner').textContent = winnerName ? `Победитель: ${winnerName}` : 'Все выбыли - ничья!';
-  document.getElementById('overlay-scores').innerHTML = Object.values(G.players)
-    .sort((a,b) => (b.score || 0) - (a.score || 0))
-    .map(p => `${p.name}: ${p.score || 0} очков`)
-    .join('<br>');
+/* ══════════════════════════════════════════════
+   END GAME
+══════════════════════════════════════════════ */
+function checkEndGame(){
+  if(gameOverShown) return;
+  const all=Object.values(G.players);
+  if(all.length<2) return;
+
+  if(gameMode==='ffa'){
+    const top=all.find(p=>(p.score||0)>=FFA_KILL_LIMIT);
+    if(!top) return;
+    gameRunning=false; gameOverShown=true;
+    update(roomRef,{status:'ended',winner:top.name,winnerTeam:''});
+    showGameOver(top.name,'');
+  }else{
+    // Bedwars: team loses when base HP=0 AND all members dead (or no respawn)
+    for(const team of ['red','blue']){
+      const base=G.bases[team];
+      const members=all.filter(p=>p.team===team);
+      const baseDead=!base||base.hp<=0;
+      const allDead=members.every(p=>p.dead&&p.respawnAt===0);
+      if(baseDead&&allDead){
+        const winTeam=team==='red'?'blue':'red';
+        gameRunning=false; gameOverShown=true;
+        update(roomRef,{status:'ended',winner:'',winnerTeam:winTeam});
+        showGameOver('',winTeam);
+        return;
+      }
+    }
+    // Also end if one base destroyed and team fully dead
+    for(const team of ['red','blue']){
+      const base=G.bases[team];
+      if(base&&base.hp<=0){
+        const members=all.filter(p=>p.team===team);
+        if(members.every(p=>p.dead)){
+          const winTeam=team==='red'?'blue':'red';
+          gameRunning=false;gameOverShown=true;
+          update(roomRef,{status:'ended',winner:'',winnerTeam:winTeam});
+          showGameOver('',winTeam);
+          return;
+        }
+      }
+    }
+  }
+}
+
+function showGameOver(winnerName,winnerTeam){
+  gameRunning=false; gameOverShown=true;
+  let isWin=false;
+  if(gameMode==='ffa') isWin=winnerName===myName;
+  else isWin=winnerTeam&&winnerTeam===myTeam;
+  document.getElementById('overlay-icon').textContent=isWin?'🏆':'💀';
+  document.getElementById('overlay-title').textContent=isWin?'ПОБЕДА!':'КОНЕЦ БОЯ';
+  if(gameMode==='ffa')
+    document.getElementById('overlay-winner').textContent=winnerName?`Победитель: ${winnerName}`:'Ничья!';
+  else
+    document.getElementById('overlay-winner').textContent=winnerTeam
+      ?(winnerTeam==='red'?'🔴 Красные победили!':'🔵 Синие победили!'):'Ничья!';
+  document.getElementById('overlay-scores').innerHTML=
+    Object.values(G.players)
+      .sort((a,b)=>(b.score||0)-(a.score||0))
+      .map(p=>`${p.name} ${CLASSES[p.cls||'basic']?.icon||''}: ${p.score||0} очков`)
+      .join('<br>');
   document.getElementById('game-overlay').classList.add('show');
-  if (isHost) setTimeout(() => set(roomRef, null), 60000);
+  if(isHost) setTimeout(()=>set(roomRef,null),60000);
 }
 
-function render() {
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, W, H);
+/* ══════════════════════════════════════════════
+   RENDERING
+══════════════════════════════════════════════ */
+function render(){
+  ctx.fillStyle='#0f172a';
+  ctx.fillRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='#1a2640';ctx.lineWidth=1;
+  for(let x=0;x<=W;x+=CELL){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=CELL){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
 
-  ctx.strokeStyle = '#1a2640'; ctx.lineWidth = 1;
-  for (let x = 0; x <= W; x += CELL) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-  for (let y = 0; y <= H; y += CELL) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-
+  if(gameMode==='bedwars') drawBases();
   drawSwamps();
   drawMines();
   drawWalls();
@@ -823,176 +1224,256 @@ function render() {
   drawParticles();
 }
 
-function drawSwamps() {
-  for (const s of G.swamps) {
-    if (!s) continue;
-    const grd = ctx.createRadialGradient(s.x + 20, s.y + 20, 3, s.x + 20, s.y + 20, 28);
-    grd.addColorStop(0, 'rgba(63,98,18,0.95)');
-    grd.addColorStop(1, 'rgba(20,83,45,0.62)');
-    ctx.fillStyle = grd;
-    ctx.fillRect(s.x, s.y, CELL, CELL);
-    ctx.strokeStyle = 'rgba(132,204,22,0.35)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(s.x + 14, s.y + 15, 6, 0, Math.PI * 2);
-    ctx.arc(s.x + 27, s.y + 27, 8, 0, Math.PI * 2);
-    ctx.stroke();
+function drawBases(){
+  for(const team of ['red','blue']){
+    const base=G.bases[team]; if(!base) continue;
+    const bp=BASE_POS[team];
+    const col=TEAM_COLORS[team];
+    const ratio=base.hp/base.maxHp;
+    // Glow
+    ctx.shadowColor=col;ctx.shadowBlur=18;
+    ctx.fillStyle=col+'33';
+    ctx.fillRect(bp.x,bp.y,40,40);
+    ctx.shadowBlur=0;
+    // Border
+    ctx.strokeStyle=col;ctx.lineWidth=3;
+    ctx.strokeRect(bp.x,bp.y,40,40);
+    // Inner icon
+    ctx.font='20px serif';ctx.textAlign='center';
+    ctx.fillText('🛏️',bp.x+20,bp.y+28);
+    // HP bar
+    ctx.fillStyle='#1f2937';ctx.fillRect(bp.x,bp.y-9,40,6);
+    ctx.fillStyle=ratio>0.5?col:'#fbbf24';
+    ctx.fillRect(bp.x,bp.y-9,40*ratio,6);
+    // Label
+    ctx.fillStyle=col;ctx.font='bold 9px Segoe UI';
+    ctx.fillText(`${base.hp}/${base.maxHp}`,bp.x+20,bp.y-12);
   }
 }
 
-function drawMines() {
-  for (const m of G.mines) {
-    if (!m) continue;
-    ctx.save();
-    ctx.translate(m.x, m.y);
-    ctx.fillStyle = '#111827';
-    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2;
-    for (let i = 0; i < 8; i++) {
-      const a = i * Math.PI / 4;
-      ctx.beginPath(); ctx.moveTo(Math.cos(a) * 7, Math.sin(a) * 7); ctx.lineTo(Math.cos(a) * 15, Math.sin(a) * 15); ctx.stroke();
+function drawSwamps(){
+  for(const s of G.swamps){
+    if(!s) continue;
+    const grd=ctx.createRadialGradient(s.x+20,s.y+20,3,s.x+20,s.y+20,28);
+    grd.addColorStop(0,'rgba(63,98,18,0.95)');
+    grd.addColorStop(1,'rgba(20,83,45,0.62)');
+    ctx.fillStyle=grd;ctx.fillRect(s.x,s.y,CELL,CELL);
+    ctx.strokeStyle='rgba(132,204,22,0.35)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(s.x+14,s.y+15,6,0,Math.PI*2);
+    ctx.arc(s.x+27,s.y+27,8,0,Math.PI*2);ctx.stroke();
+  }
+}
+
+function drawMines(){
+  for(const m of G.mines){
+    if(!m) continue;
+    ctx.save();ctx.translate(m.x,m.y);
+    ctx.fillStyle='#111827';
+    ctx.beginPath();ctx.arc(0,0,12,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke();
+    ctx.strokeStyle='#f97316';ctx.lineWidth=2;
+    for(let i=0;i<8;i++){
+      const a=i*Math.PI/4;
+      ctx.beginPath();ctx.moveTo(Math.cos(a)*7,Math.sin(a)*7);ctx.lineTo(Math.cos(a)*15,Math.sin(a)*15);ctx.stroke();
     }
-    ctx.fillStyle = '#fbbf24';
-    ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
 }
 
-function drawWalls() {
-  for (const w of G.walls) {
-    if (!w) continue;
-    if (w.hp >= 99) {
-      ctx.fillStyle = '#334155'; ctx.fillRect(w.x, w.y, WALL_SIZE, WALL_SIZE);
-      ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2; ctx.strokeRect(w.x + 1, w.y + 1, WALL_SIZE - 2, WALL_SIZE - 2);
-      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(w.x + 7, w.y + 7); ctx.lineTo(w.x + 33, w.y + 33); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x + 33, w.y + 7); ctx.lineTo(w.x + 7, w.y + 33); ctx.stroke();
-    } else {
-      const dmg = 1 - w.hp / (w.maxHp || 1);
-      const r = Math.round(160 - dmg * 60), g = Math.round(50 - dmg * 20), b = Math.round(20 - dmg * 10);
-      ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fillRect(w.x, w.y, WALL_SIZE, WALL_SIZE);
-      ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1; ctx.strokeRect(w.x + 0.5, w.y + 0.5, WALL_SIZE - 1, WALL_SIZE - 1);
-      ctx.beginPath(); ctx.moveTo(w.x, w.y + 20); ctx.lineTo(w.x + 40, w.y + 20); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x + 20, w.y); ctx.lineTo(w.x + 20, w.y + 20); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x + 10, w.y + 20); ctx.lineTo(w.x + 10, w.y + 40); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x + 30, w.y + 20); ctx.lineTo(w.x + 30, w.y + 40); ctx.stroke();
+function drawWalls(){
+  for(const w of G.walls){
+    if(!w) continue;
+    if(w.hp>=99){
+      ctx.fillStyle='#334155';ctx.fillRect(w.x,w.y,WALL_SIZE,WALL_SIZE);
+      ctx.strokeStyle='#64748b';ctx.lineWidth=2;ctx.strokeRect(w.x+1,w.y+1,WALL_SIZE-2,WALL_SIZE-2);
+      ctx.strokeStyle='#94a3b8';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(w.x+7,w.y+7);ctx.lineTo(w.x+33,w.y+33);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(w.x+33,w.y+7);ctx.lineTo(w.x+7,w.y+33);ctx.stroke();
+    }else{
+      const dmg=1-w.hp/(w.maxHp||1);
+      const r=Math.round(160-dmg*60),g=Math.round(50-dmg*20),b=Math.round(20-dmg*10);
+      ctx.fillStyle=`rgb(${r},${g},${b})`;ctx.fillRect(w.x,w.y,WALL_SIZE,WALL_SIZE);
+      ctx.strokeStyle='#7c2d12';ctx.lineWidth=1;ctx.strokeRect(w.x+0.5,w.y+0.5,WALL_SIZE-1,WALL_SIZE-1);
+      ctx.beginPath();ctx.moveTo(w.x,w.y+20);ctx.lineTo(w.x+40,w.y+20);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(w.x+20,w.y);ctx.lineTo(w.x+20,w.y+20);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(w.x+10,w.y+20);ctx.lineTo(w.x+10,w.y+40);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(w.x+30,w.y+20);ctx.lineTo(w.x+30,w.y+40);ctx.stroke();
     }
   }
 }
 
-function drawTanks() {
-  for (const [id, p] of Object.entries(G.players)) {
-    if (!p || p.dead || typeof p.x !== 'number' || typeof p.y !== 'number') continue;
-    const isMe = id === myId;
-    // Use interpolated position for non-host clients (other tanks)
-    const drawX = (!isMe && !isHost && typeof p._renderX === 'number') ? p._renderX : p.x;
-    const drawY = (!isMe && !isHost && typeof p._renderY === 'number') ? p._renderY : p.y;
-    const { dir, color, hp } = p;
-    const x = drawX, y = drawY;
-    const S = HALF;
+function drawTanks(){
+  for(const [id,p] of Object.entries(G.players)){
+    if(!p||p.dead||typeof p.x!=='number') continue;
+    const isMe=id===myId;
+    const rx=(!isMe&&!isHost&&typeof p._renderX==='number')?p._renderX:p.x;
+    const ry=(!isMe&&!isHost&&typeof p._renderY==='number')?p._renderY:p.y;
+    const {dir,color,hp,cls:pcls='basic'}=p;
+    const cls=CLASSES[pcls];
+    const S=cls.halfSize;
+    const x=rx,y=ry;
 
-    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x - S + 4, y - S + 4, S * 2, S * 2);
-    ctx.fillStyle = '#374151';
-    if (dir === 'up' || dir === 'down') {
-      ctx.fillRect(x - S - 5, y - S, 8, S * 2);
-      ctx.fillRect(x + S - 3, y - S, 8, S * 2);
-    } else {
-      ctx.fillRect(x - S, y - S - 5, S * 2, 8);
-      ctx.fillRect(x - S, y + S - 3, S * 2, 8);
+    // Team ring in bedwars
+    if(gameMode==='bedwars'&&p.team){
+      ctx.strokeStyle=TEAM_COLORS[p.team];ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(x,y,S+5,0,Math.PI*2);ctx.stroke();
     }
 
-    ctx.fillStyle = color || '#888'; ctx.fillRect(x - S, y - S, S * 2, S * 2);
-    ctx.fillStyle = shadeColor(color || '#888', -30);
-    ctx.beginPath(); ctx.arc(x, y, S * 0.54, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.22)';ctx.fillRect(x-S+4,y-S+4,S*2,S*2);
+    ctx.fillStyle='#374151';
+    if(dir==='up'||dir==='down'){
+      ctx.fillRect(x-S-5,y-S,8,S*2);ctx.fillRect(x+S-3,y-S,8,S*2);
+    }else{
+      ctx.fillRect(x-S,y-S-5,S*2,8);ctx.fillRect(x-S,y+S-3,S*2,8);
+    }
+    ctx.fillStyle=color||'#888';ctx.fillRect(x-S,y-S,S*2,S*2);
+    ctx.fillStyle=shadeColor(color||'#888',-30);
+    ctx.beginPath();ctx.arc(x,y,S*0.54,0,Math.PI*2);ctx.fill();
 
-    ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-    const gl = S + 13;
+    ctx.strokeStyle='#d1d5db';ctx.lineWidth=pcls==='heavy'?7:5;ctx.lineCap='round';
+    const gl=S+13;
     ctx.beginPath();
-    if (dir === 'up') { ctx.moveTo(x, y); ctx.lineTo(x, y - gl); }
-    else if (dir === 'down') { ctx.moveTo(x, y); ctx.lineTo(x, y + gl); }
-    else if (dir === 'left') { ctx.moveTo(x, y); ctx.lineTo(x - gl, y); }
-    else { ctx.moveTo(x, y); ctx.lineTo(x + gl, y); }
+    if(dir==='up')         {ctx.moveTo(x,y);ctx.lineTo(x,y-gl);}
+    else if(dir==='down')  {ctx.moveTo(x,y);ctx.lineTo(x,y+gl);}
+    else if(dir==='left')  {ctx.moveTo(x,y);ctx.lineTo(x-gl,y);}
+    else                   {ctx.moveTo(x,y);ctx.lineTo(x+gl,y);}
     ctx.stroke();
 
-    if (isMe) {
-      ctx.strokeStyle = inSwamp(x, y) ? '#84cc16' : '#fbbf24';
-      ctx.lineWidth = 2; ctx.setLineDash([5,3]); ctx.strokeRect(x - S - 2, y - S - 2, S * 2 + 4, S * 2 + 4); ctx.setLineDash([]);
+    // Class icon
+    ctx.font=`${Math.round(S*0.8)}px serif`;ctx.textAlign='center';
+    ctx.fillText(cls.icon,x,y+S*0.28);
+
+    if(isMe){
+      ctx.strokeStyle=inSwamp(x,y)?'#84cc16':'#fbbf24';
+      ctx.lineWidth=2;ctx.setLineDash([5,3]);
+      ctx.strokeRect(x-S-2,y-S-2,S*2+4,S*2+4);ctx.setLineDash([]);
     }
 
-    const bw = S * 2;
-    ctx.fillStyle = '#1f2937'; ctx.fillRect(x - S, y - S - 11, bw, 6);
-    const hpRatio = (hp || 0) / MAX_HP;
-    ctx.fillStyle = hpRatio >= 1 ? '#22c55e' : hpRatio >= 0.5 ? '#eab308' : '#ef4444';
-    ctx.fillRect(x - S, y - S - 11, bw * hpRatio, 6);
+    // HP bar
+    ctx.fillStyle='#1f2937';ctx.fillRect(x-S,y-S-11,S*2,6);
+    const hr=(hp||0)/(cls.hp||3);
+    ctx.fillStyle=hr>=1?'#22c55e':hr>=0.5?'#eab308':'#ef4444';
+    ctx.fillRect(x-S,y-S-11,S*2*hr,6);
 
-    ctx.fillStyle = isMe ? '#fde68a' : '#f1f5f9';
-    ctx.font = 'bold 11px Segoe UI'; ctx.textAlign = 'center';
-    ctx.shadowColor = '#000'; ctx.shadowBlur = 5; ctx.fillText(p.name || '???', x, y - S - 17); ctx.shadowBlur = 0;
+    // Name
+    ctx.fillStyle=isMe?'#fde68a':'#f1f5f9';
+    ctx.font='bold 10px Segoe UI';ctx.textAlign='center';
+    ctx.shadowColor='#000';ctx.shadowBlur=5;
+    ctx.fillText(p.name||'???',x,y-S-17);ctx.shadowBlur=0;
   }
 }
 
-function drawBullets() {
-  for (const b of Object.values(G.bullets)) {
-    if (!b || typeof b.x !== 'number') continue;
-    const col = G.players[b.owner]?.color || '#fbbf24';
-    ctx.strokeStyle = col + '66'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-    const tl = 14;
+function drawBullets(){
+  for(const b of Object.values(G.bullets)){
+    if(!b||typeof b.x!=='number') continue;
+    const col=G.players[b.owner]?.color||'#fbbf24';
+    const big=b.dmg>1;
+    ctx.strokeStyle=col+'66';ctx.lineWidth=big?5:3;ctx.lineCap='round';
+    const tl=big?18:14;
     ctx.beginPath();
-    if (b.dir === 'up') { ctx.moveTo(b.x, b.y + tl); ctx.lineTo(b.x, b.y); }
-    else if (b.dir === 'down') { ctx.moveTo(b.x, b.y - tl); ctx.lineTo(b.x, b.y); }
-    else if (b.dir === 'left') { ctx.moveTo(b.x + tl, b.y); ctx.lineTo(b.x, b.y); }
-    else { ctx.moveTo(b.x - tl, b.y); ctx.lineTo(b.x, b.y); }
+    if(b.dir==='up')       {ctx.moveTo(b.x,b.y+tl);ctx.lineTo(b.x,b.y);}
+    else if(b.dir==='down'){ctx.moveTo(b.x,b.y-tl);ctx.lineTo(b.x,b.y);}
+    else if(b.dir==='left'){ctx.moveTo(b.x+tl,b.y);ctx.lineTo(b.x,b.y);}
+    else                   {ctx.moveTo(b.x-tl,b.y);ctx.lineTo(b.x,b.y);}
     ctx.stroke();
-
-    ctx.shadowBlur = 14; ctx.shadowColor = col;
-    ctx.fillStyle = '#fef9c3'; ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.shadowBlur=big?20:14;ctx.shadowColor=col;
+    ctx.fillStyle=big?'#ffa500':'#fef9c3';
+    ctx.beginPath();ctx.arc(b.x,b.y,big?7:5,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
   }
 }
 
-function drawParticles() {
-  for (const p of G.particles) {
-    const a = p.life / p.maxLife;
-    ctx.globalAlpha = a;
-    ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * a, 0, Math.PI * 2); ctx.fill();
+function drawParticles(){
+  for(const p of G.particles){
+    const a=p.life/p.maxLife;
+    ctx.globalAlpha=a;ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*a,0,Math.PI*2);ctx.fill();
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha=1;
 }
 
-function shadeColor(hex, amt) {
-  if (!hex || hex.charAt(0) !== '#') return hex || '#888';
-  const n = parseInt(hex.replace('#', ''), 16);
-  const r = Math.max(0, Math.min(255, (n >> 16) + amt));
-  const g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
-  const b = Math.max(0, Math.min(255, (n & 0xff) + amt));
+function shadeColor(hex,amt){
+  if(!hex||hex[0]!=='#') return hex||'#888';
+  const n=parseInt(hex.replace('#',''),16);
+  const r=Math.max(0,Math.min(255,(n>>16)+amt));
+  const g=Math.max(0,Math.min(255,((n>>8)&0xff)+amt));
+  const b=Math.max(0,Math.min(255,(n&0xff)+amt));
   return `rgb(${r},${g},${b})`;
 }
 
-function updateHUD() {
-  const me = G.players[myId];
-  if (!me) return;
+/* ══════════════════════════════════════════════
+   HUD
+══════════════════════════════════════════════ */
+function updateHUD(){
+  const me=G.players[myId]; if(!me) return;
+  const cls=CLASSES[me.cls||'basic'];
 
-  const lives = Math.max(0, me.lives || 0);
-  document.getElementById('ui-lives').innerHTML = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, MAX_LIVES - lives));
+  // Lives / HP
+  if(gameMode==='ffa'){
+    document.getElementById('ui-lives').innerHTML=
+      '❤️'.repeat(Math.max(0,me.hp||0))+'🖤'.repeat(Math.max(0,cls.hp-(me.hp||0)));
+  }else{
+    const base=G.bases[myTeam];
+    document.getElementById('ui-lives').innerHTML=
+      `${myTeam==='red'?'🔴':'🔵'} База: ${base?base.hp:0}/${BW_BASE_HP} &nbsp; HP: ${'❤️'.repeat(Math.max(0,me.hp||0))}`;
+  }
 
-  const sorted = Object.values(G.players).sort((a,b) => (b.score || 0) - (a.score || 0));
-  document.getElementById('ui-scores').innerHTML = sorted.map(p =>
-    `<span style="color:${p.color || '#888'};font-weight:${p.name === myName ? 900 : 500};">${p.name}: ${p.score || 0}${(p.lives || 0) <= 0 ? ' 💀' : ''}</span>`
-  ).join('');
+  // Scores
+  const sorted=Object.values(G.players).sort((a,b)=>(b.score||0)-(a.score||0));
+  if(gameMode==='ffa'){
+    document.getElementById('ui-scores').innerHTML=sorted.map(p=>
+      `<span style="color:${p.color||'#888'};font-weight:${p.name===myName?900:500};">
+        ${CLASSES[p.cls||'basic']?.icon} ${p.name}: ${p.score||0}${(p.score||0)>=FFA_KILL_LIMIT-3?' 🔥':''}
+      </span>`).join('');
+  }else{
+    // Team scores
+    const rs=Object.values(G.players).filter(p=>p.team==='red').reduce((s,p)=>s+(p.score||0),0);
+    const bs=Object.values(G.players).filter(p=>p.team==='blue').reduce((s,p)=>s+(p.score||0),0);
+    document.getElementById('ui-scores').innerHTML=
+      `<span style="color:#ef4444;font-weight:700;">🔴 ${rs}</span>
+       <span style="color:#64748b;">vs</span>
+       <span style="color:#3b82f6;font-weight:700;">🔵 ${bs}</span>
+       &nbsp;&nbsp;`+
+      sorted.map(p=>`<span style="color:${p.color};font-size:10px;">${p.name}: ${p.score||0}</span>`).join(' ');
+  }
 
-  const bar = document.getElementById('respawn-bar');
-  if (me.dead && (me.lives || 0) > 0 && me.respawnAt > 0) {
-    const sec = Math.max(0, Math.ceil((me.respawnAt - Date.now()) / 1000));
-    document.getElementById('respawn-timer').textContent = sec;
+  // Respawn
+  const bar=document.getElementById('respawn-bar');
+  if(me.dead&&me.respawnAt>0){
+    const sec=Math.max(0,Math.ceil((me.respawnAt-Date.now())/1000));
+    document.getElementById('respawn-timer').textContent=sec;
     bar.classList.add('show');
-  } else {
+  }else{
     bar.classList.remove('show');
+  }
+
+  // Ability cooldown display
+  const nowT=Date.now();
+  if(myClass==='heavy'){
+    const cd=CLASSES.heavy.nukeCd||30000;
+    const rem=Math.max(0,cd-(nowT-myAbilityTs.nuke));
+    document.getElementById('ab-nuke').textContent=
+      rem>0?`💣 Ядерный: ${Math.ceil(rem/1000)}с`:'💣 Ядерный: ГОТОВ [F]';
+    document.getElementById('ab-nuke').style.color=rem>0?'#64748b':'#f97316';
+  }
+  if(myClass==='engineer'){
+    const cd=CLASSES.engineer.placeCd||5000;
+    const rem=Math.max(0,cd-(nowT-myAbilityTs.place));
+    document.getElementById('ab-place').textContent=
+      rem>0?`🔧 Постройка: ${Math.ceil(rem/1000)}с`:'🔧 Q-мина / E-стена: ГОТОВО';
+    document.getElementById('ab-place').style.color=rem>0?'#64748b':'#fbbf24';
+  }
+  if(myClass==='scout'){
+    const cd=CLASSES.scout.shootCd;
+    const rem=Math.max(0,cd-(nowT-myAbilityTs.side));
+    document.getElementById('ab-side').textContent=
+      rem>0?`⚡ Боковой: ${rem}мс`:'⚡ Q/E — боковой выстрел';
+    document.getElementById('ab-side').style.color=rem>0?'#64748b':'#38bdf8';
   }
 }
 
 document.getElementById('player-name').focus();
-console.log('Tanki Online: swamps, mines and full-width walls enabled');
 </script>
 </body>
 </html>
