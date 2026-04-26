@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн — School Edition v3.1</title>
+  <title>Танки Онлайн — School Edition v3.2</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -190,6 +190,7 @@ const MAX_LIVES  = 3;
 const RESPAWN_MS = 3000;
 const INPUT_MS   = 50;
 const HOST_TICK  = 1000 / 30;
+const CELL       = 40;
 
 const SPAWNS = [
   { x:  60, y:  60, dir: 'right' },
@@ -223,7 +224,7 @@ const G = {
 
 // Input state (sent to Firebase by each client)
 const myKeys  = { up:false, down:false, left:false, right:false };
-let myShootTs = 0;    // timestamp of last shoot request
+let myShootTs = 0;
 let lastInputSend = 0;
 
 // Host-side: collected input from all players
@@ -246,7 +247,6 @@ window.addEventListener('keydown', e => {
     case 'ArrowLeft':  case 'KeyA': myKeys.left  = true; break;
     case 'ArrowRight': case 'KeyD': myKeys.right = true; break;
     case 'Space':
-      // Set shoot timestamp (host will compare to detect new shots)
       const now = Date.now();
       if (now - myShootTs >= SHOOT_CD) {
         myShootTs = now;
@@ -282,7 +282,7 @@ function showError(msg) {
 //  MAP GENERATION
 // ══════════════════════════════════════════════
 function generateWalls() {
-  const CELL = 40, cells = [];
+  const cells = [];
   for (let c = 1; c < W/CELL-1; c++)
     for (let r = 1; r < H/CELL-1; r++) {
       const cx = c*CELL+CELL/2, cy = r*CELL+CELL/2;
@@ -295,23 +295,56 @@ function generateWalls() {
     const j = Math.floor(Math.random()*(i+1));
     [cells[i], cells[j]] = [cells[j], cells[i]];
   }
-  return cells.slice(0, 50).map(c => { // Увеличено количество препятствий до 50
-    const steel = Math.random() < 0.22;
-    return { x:c.x, y:c.y, hp: steel?99:1, maxHp: steel?99:1 };
+
+  const count = 75;
+  return cells.slice(0, count).map(c => {
+    const r = Math.random();
+    if (r < 0.30) {
+      return { x:c.x, y:c.y, type:'brick', hp:1, maxHp:1 };
+    } else if (r < 0.50) {
+      return { x:c.x, y:c.y, type:'steel', hp:99, maxHp:99 };
+    } else if (r < 0.75) {
+      return { x:c.x, y:c.y, type:'swamp', hp:99, maxHp:99 };
+    } else {
+      return { x:c.x, y:c.y, type:'mine',  hp:1, maxHp:1 };
+    }
   });
 }
 
 // ══════════════════════════════════════════════
 //  COLLISION HELPERS
 // ══════════════════════════════════════════════
-function hitsWall(nx, ny) {
+function isSolidWall(nx, ny) {
   for (const w of G.walls) {
     if (!w) continue;
-    if (nx+HALF > w.x+3 && nx-HALF < w.x+37 &&
-        ny+HALF > w.y+3 && ny-HALF < w.y+37) return true;
+    if (w.type !== 'brick' && w.type !== 'steel') continue;
+    if (nx+HALF > w.x && nx-HALF < w.x+CELL &&
+        ny+HALF > w.y && ny-HALF < w.y+CELL) return true;
   }
   return false;
 }
+
+function isInSwamp(nx, ny) {
+  for (const w of G.walls) {
+    if (!w) continue;
+    if (w.type !== 'swamp') continue;
+    if (nx+HALF > w.x && nx-HALF < w.x+CELL &&
+        ny+HALF > w.y && ny-HALF < w.y+CELL) return true;
+  }
+  return false;
+}
+
+function hitMine(nx, ny) {
+  for (let i = 0; i < G.walls.length; i++) {
+    const w = G.walls[i];
+    if (!w) continue;
+    if (w.type !== 'mine') continue;
+    if (nx+HALF > w.x+8 && nx-HALF < w.x+32 &&
+        ny+HALF > w.y+8 && ny-HALF < w.y+32) return i;
+  }
+  return -1;
+}
+
 function outBounds(nx, ny) {
   return nx-HALF < 0 || nx+HALF > W || ny-HALF < 0 || ny+HALF > H;
 }
@@ -383,7 +416,6 @@ function snd(type) {
 
 // ══════════════════════════════════════════════
 //  INPUT SENDING (every client → Firebase)
-//  Writes to: rooms/{code}/input/{myId}
 // ══════════════════════════════════════════════
 function sendInput() {
   if (!gameRunning || !myId || !roomCode) return;
@@ -396,7 +428,7 @@ function sendInput() {
     d: myKeys.down,
     l: myKeys.left,
     r: myKeys.right,
-    s: myShootTs   // timestamp of last shoot request
+    s: myShootTs
   });
 }
 
@@ -429,7 +461,6 @@ document.getElementById('btn-create').onclick = async () => {
   });
   onDisconnect(roomRef).remove();
 
-  // Host listens to input from ALL players
   onValue(ref(db, `rooms/${roomCode}/input`), snap => {
     const data = snap.val();
     if (!data) return;
@@ -486,20 +517,16 @@ function openLobby() {
   document.getElementById('host-controls').style.display = isHost ? '' : 'none';
   document.getElementById('student-wait').style.display  = isHost ? 'none' : '';
 
-  // Single listener on the entire room
   onValue(roomRef, snap => {
     const data = snap.val();
     if (!data) return;
 
-    // ---- Sync state ----
-    // Host is authoritative during gameplay — skip overwriting its local state
     if (!(isHost && gameRunning)) {
       G.players = data.players || {};
       G.walls   = data.walls   || [];
       G.bullets = data.bullets || {};
     }
 
-    // ---- Lobby UI ----
     const entries = Object.entries(data.players || {});
     document.getElementById('player-count-badge').textContent = `${entries.length}/6`;
     document.getElementById('player-list').innerHTML = entries.map(([id,p]) => `
@@ -517,12 +544,10 @@ function openLobby() {
         entries.length < 2 ? '⏳ Ждём хотя бы одного ученика...' : `✅ Готово! ${entries.length} игроков`;
     }
 
-    // ---- Game start ----
     if (data.status === 'playing' && !gameRunning) {
       gameRunning   = true;
       gameOverShown = false;
       G.particles   = [];
-      // Host takes a local copy to work with
       if (isHost) {
         G.players = JSON.parse(JSON.stringify(data.players || {}));
         G.walls   = JSON.parse(JSON.stringify(data.walls   || []));
@@ -532,9 +557,7 @@ function openLobby() {
       requestAnimationFrame(gameLoop);
     }
 
-    // ---- Game end (clients) ----
     if (data.status === 'ended' && !gameOverShown) {
-      // Make sure we have final player data
       G.players = data.players || G.players;
       showGameOver(data.winner);
     }
@@ -561,43 +584,54 @@ function gameLoop(ts) {
 }
 
 // ══════════════════════════════════════════════
-//  HOST TICK — all physics runs here (~30 FPS)
-//
-//  KEY FIX: Uses MULTI-PATH updates like
-//    "players/p1/x": 100
-//  instead of
-//    "players": { p1: { x: 100 } }   ← THIS DELETES ALL OTHER FIELDS!
+//  HOST TICK
 // ══════════════════════════════════════════════
 function hostTick(ts) {
   if (ts - lastHostTick < HOST_TICK) return;
   lastHostTick = ts;
 
   const now = Date.now();
-  // All changes go into ONE flat object with paths like "players/p1/x"
   const fb = {};
 
-  // ── 1. Move tanks based on input ──────────────────────
+  // ── 1. Move tanks ─────────────────────────────────────
   for (const [pid, p] of Object.entries(G.players)) {
     if (p.dead) continue;
 
     const inp = hostInput[pid];
     if (!inp) continue;
 
-    const pSpeed = (pid === 'p1') ? SPEED : SPEED * 1.25; // Ученики (не p1) двигаются на 25% быстрее
-    let nx = p.x, ny = p.y, ndir = p.dir, moved = false;
-    if      (inp.u) { ny -= pSpeed; ndir = 'up';    moved = true; }
-    else if (inp.d) { ny += pSpeed; ndir = 'down';  moved = true; }
-    else if (inp.l) { nx -= pSpeed; ndir = 'left';  moved = true; }
-    else if (inp.r) { nx += pSpeed; ndir = 'right'; moved = true; }
+    let dx = 0, dy = 0, ndir = p.dir;
+    if      (inp.u) { dy = -1; ndir = 'up'; }
+    else if (inp.d) { dy = 1;  ndir = 'down'; }
+    else if (inp.l) { dx = -1; ndir = 'left'; }
+    else if (inp.r) { dx = 1;  ndir = 'right'; }
 
-    if (moved && !outBounds(nx, ny) && !hitsWall(nx, ny)) {
-      p.x = nx; p.y = ny; p.dir = ndir;
-      fb[`players/${pid}/x`]   = nx;
-      fb[`players/${pid}/y`]   = ny;
-      fb[`players/${pid}/dir`] = ndir;
+    if (dx !== 0 || dy !== 0) {
+      const baseSpeed = (pid === 'p1') ? SPEED : SPEED * 1.25;
+      const inSwamp   = isInSwamp(p.x, p.y);
+      const speed     = baseSpeed * (inSwamp ? 0.35 : 1);
+      const nx = p.x + dx * speed;
+      const ny = p.y + dy * speed;
+
+      if (!outBounds(nx, ny) && !isSolidWall(nx, ny)) {
+        p.x = nx; p.y = ny; p.dir = ndir;
+        fb[`players/${pid}/x`]   = nx;
+        fb[`players/${pid}/y`]   = ny;
+        fb[`players/${pid}/dir`] = ndir;
+      }
     }
 
-    // Shooting: new shot if inp.s timestamp is newer than last processed
+    // Mine check
+    const mineIdx = hitMine(p.x, p.y);
+    if (mineIdx !== -1) {
+      G.walls[mineIdx] = null;
+      wallsDirty = true;
+      damagePlayer(pid, MAX_HP, null, fb);
+      spawnExplosion(p.x, p.y, '#ef4444', 30);
+      snd('explode');
+    }
+
+    // Shooting
     if (inp.s && inp.s > (hostLastShoot[pid] || 0)) {
       hostLastShoot[pid] = inp.s;
       const off = HALF + 14;
@@ -639,7 +673,7 @@ function hostTick(ts) {
     if (!b) { bulletsToDelete.push(bId); continue; }
 
     let { x, y, dir, owner } = b;
-    const bSpeed = (owner === 'p1') ? BSPEED : BSPEED * 1.35; // Снаряды учеников на 35% быстрее
+    const bSpeed = (owner === 'p1') ? BSPEED : BSPEED * 1.35;
     if      (dir === 'up')    y -= bSpeed;
     else if (dir === 'down')  y += bSpeed;
     else if (dir === 'left')  x -= bSpeed;
@@ -651,19 +685,19 @@ function hostTick(ts) {
       continue;
     }
 
-    // Wall collision
+    // Wall collision (only solid walls block bullets)
     let hitWall = false;
     for (let i = 0; i < G.walls.length; i++) {
       const w = G.walls[i];
       if (!w) continue;
-      if (x > w.x+3 && x < w.x+37 && y > w.y+3 && y < w.y+37) {
-        if (w.hp < 99) {
+      if (w.type !== 'brick' && w.type !== 'steel') continue;
+      if (x > w.x && x < w.x+CELL && y > w.y && y < w.y+CELL) {
+        if (w.type === 'brick') {
           w.hp--;
           if (w.hp <= 0) { G.walls[i] = null; spawnDebris(w.x, w.y); }
           wallsDirty = true;
         }
         hitWall = true;
-        wallsDirty = true;
         break;
       }
     }
@@ -676,46 +710,21 @@ function hostTick(ts) {
       if (Math.hypot(p.x - x, p.y - y) < HALF + 6) { hitPid = pid; break; }
     }
     if (hitPid) {
-      const t = G.players[hitPid];
-      const newHp = (t.hp || 1) - 1;
-      if (newHp <= 0) {
-        const nl = (t.lives || 1) - 1;
-        t.hp = 0; t.lives = nl; t.dead = true;
-        t.respawnAt = nl > 0 ? now + RESPAWN_MS : 0;
-        fb[`players/${hitPid}/hp`]        = 0;
-        fb[`players/${hitPid}/lives`]     = nl;
-        fb[`players/${hitPid}/dead`]      = true;
-        fb[`players/${hitPid}/respawnAt`] = t.respawnAt;
-        // +1 score for shooter
-        const sh = G.players[owner];
-        if (sh) {
-          sh.score = (sh.score || 0) + 1;
-          fb[`players/${owner}/score`] = sh.score;
-        }
-        spawnExplosion(t.x, t.y, t.color || '#ff0000', 25);
-        snd('explode');
-      } else {
-        t.hp = newHp;
-        fb[`players/${hitPid}/hp`] = newHp;
-        spawnExplosion(x, y, '#fef9c3', 8);
-        snd('hit');
-      }
+      damagePlayer(hitPid, 1, owner, fb);
       bulletsToDelete.push(bId);
       continue;
     }
 
-    // Bullet flies on — update position
+    // Bullet flies on
     b.x = x; b.y = y;
     fb[`bullets/${bId}`] = { x, y, dir, owner };
   }
 
-  // Remove dead bullets
   for (const bId of bulletsToDelete) {
     delete G.bullets[bId];
     fb[`bullets/${bId}`] = null;
   }
 
-  // Walls changed
   if (wallsDirty) {
     const cleaned = G.walls.filter(Boolean);
     G.walls = cleaned;
@@ -729,6 +738,36 @@ function hostTick(ts) {
 
   // ── 5. Check end game ─────────────────────────────────
   checkEndGame();
+}
+
+// ══════════════════════════════════════════════
+//  DAMAGE / KILL HELPER
+// ══════════════════════════════════════════════
+function damagePlayer(pid, amount, killerId, fb) {
+  const p = G.players[pid];
+  if (!p || p.dead) return;
+  const newHp = (p.hp || MAX_HP) - amount;
+  if (newHp <= 0) {
+    const nl = (p.lives || MAX_LIVES) - 1;
+    p.hp = 0; p.lives = nl; p.dead = true;
+    p.respawnAt = nl > 0 ? Date.now() + RESPAWN_MS : 0;
+    fb[`players/${pid}/hp`]        = 0;
+    fb[`players/${pid}/lives`]     = nl;
+    fb[`players/${pid}/dead`]      = true;
+    fb[`players/${pid}/respawnAt`] = p.respawnAt;
+    if (killerId && G.players[killerId]) {
+      const sh = G.players[killerId];
+      sh.score = (sh.score || 0) + 1;
+      fb[`players/${killerId}/score`] = sh.score;
+    }
+    spawnExplosion(p.x, p.y, p.color || '#ff0000', 25);
+    snd('explode');
+  } else {
+    p.hp = newHp;
+    fb[`players/${pid}/hp`] = newHp;
+    spawnExplosion(p.x, p.y, '#fef9c3', 8);
+    snd('hit');
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -789,23 +828,47 @@ function render() {
 function drawWalls() {
   for (const w of G.walls) {
     if (!w) continue;
-    if (w.hp >= 99) {
-      // Steel
-      ctx.fillStyle = '#334155'; ctx.fillRect(w.x+2, w.y+2, 36, 36);
-      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2; ctx.strokeRect(w.x+2, w.y+2, 36, 36);
+    if (w.type === 'steel') {
+      ctx.fillStyle = '#334155'; ctx.fillRect(w.x, w.y, CELL, CELL);
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2; ctx.strokeRect(w.x, w.y, CELL, CELL);
       ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(w.x+8, w.y+8); ctx.lineTo(w.x+32, w.y+32); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+32, w.y+8); ctx.lineTo(w.x+8, w.y+32); ctx.stroke();
-    } else {
-      // Brick
+      ctx.beginPath(); ctx.moveTo(w.x+6, w.y+6); ctx.lineTo(w.x+34, w.y+34); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+34, w.y+6); ctx.lineTo(w.x+6, w.y+34); ctx.stroke();
+    } else if (w.type === 'brick') {
       const dmg = 1 - w.hp / (w.maxHp || 1);
       const r = Math.round(160-dmg*60), g = Math.round(50-dmg*20), b = Math.round(20-dmg*10);
-      ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fillRect(w.x+2, w.y+2, 36, 36);
-      ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1; ctx.strokeRect(w.x+2, w.y+2, 36, 36);
-      ctx.beginPath(); ctx.moveTo(w.x+2, w.y+21); ctx.lineTo(w.x+38, w.y+21); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+21, w.y+2); ctx.lineTo(w.x+21, w.y+21); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+11, w.y+21); ctx.lineTo(w.x+11, w.y+38); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+31, w.y+21); ctx.lineTo(w.x+31, w.y+38); ctx.stroke();
+      ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fillRect(w.x, w.y, CELL, CELL);
+      ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1; ctx.strokeRect(w.x, w.y, CELL, CELL);
+      ctx.beginPath(); ctx.moveTo(w.x, w.y+20); ctx.lineTo(w.x+40, w.y+20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+20, w.y); ctx.lineTo(w.x+20, w.y+20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+10, w.y+20); ctx.lineTo(w.x+10, w.y+40); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x+30, w.y+20); ctx.lineTo(w.x+30, w.y+40); ctx.stroke();
+    } else if (w.type === 'swamp') {
+      ctx.fillStyle = '#1a3a2a'; ctx.fillRect(w.x, w.y, CELL, CELL);
+      ctx.fillStyle = '#22553a';
+      const blobs = [[6,6],[26,10],[10,26],[30,30],[14,34],[34,14]];
+      for (const [dx,dy] of blobs) {
+        ctx.beginPath(); ctx.arc(w.x+dx, w.y+dy, 3.5, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.fillStyle = '#2d6a4a';
+      const blobs2 = [[16,8],[36,18],[8,28],[28,38]];
+      for (const [dx,dy] of blobs2) {
+        ctx.beginPath(); ctx.arc(w.x+dx, w.y+dy, 2.5, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.strokeStyle = '#143820'; ctx.lineWidth = 1; ctx.strokeRect(w.x, w.y, CELL, CELL);
+    } else if (w.type === 'mine') {
+      ctx.fillStyle = '#2a0a0a'; ctx.fillRect(w.x, w.y, CELL, CELL);
+      const cx = w.x+20, cy = w.y+20;
+      ctx.fillStyle = '#7f1d1d';
+      ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fca5a5';
+      ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill();
+      const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5;
+      ctx.strokeStyle = `rgba(239,68,68,${pulse})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = '#450a0a'; ctx.lineWidth = 1; ctx.strokeRect(w.x, w.y, CELL, CELL);
     }
   }
 }
@@ -934,7 +997,6 @@ function updateHUD() {
     </span>`
   ).join('');
 
-  // Respawn timer
   const bar = document.getElementById('respawn-bar');
   if (me.dead && (me.lives||0) > 0 && me.respawnAt > 0) {
     const sec = Math.max(0, Math.ceil((me.respawnAt - Date.now()) / 1000));
@@ -949,7 +1011,7 @@ function updateHUD() {
 //  INIT
 // ══════════════════════════════════════════════
 document.getElementById('player-name').focus();
-console.log('🎮 Танки Онлайн v3 — fixed multi-path updates');
+console.log('🎮 Танки Онлайн v3.2 — swamps, mines, wide walls');
 </script>
 </body>
 </html>
