@@ -348,18 +348,19 @@ window.addEventListener('keydown', e => {
       }
       break;
     }
-    case 'KeyQ': { // Scout left-side shot OR Engineer place mine
-      const now=Date.now();
-      if(myClass==='scout'&&now-myAbilityTs.side>=CLASSES.scout.shootCd)   myAbilityTs.side=now*10+1;
-      if(myClass==='engineer'&&now-myAbilityTs.place>=(CLASSES.engineer.placeCd||5000)) myAbilityTs.place=now*10+1; // odd = mine
+// Для Скаута и Инженера записываем ПРОСТО now
+    case 'KeyQ': {
+      const now = Date.now();
+      if(myClass === 'scout' && now - myAbilityTs.side >= CLASSES.scout.shootCd) {
+         myAbilityTs.side = now; 
+         // тип (лево/право) можно отправить на сервер отдельным параметром
+      }
+      if(myClass === 'engineer' && now - myAbilityTs.place >= (CLASSES.engineer.placeCd || 5000)) {
+         myAbilityTs.place = now;
+      }
       break;
     }
-    case 'KeyE': { // Scout right-side shot OR Engineer place wall
-      const now=Date.now();
-      if(myClass==='scout'&&now-myAbilityTs.side>=CLASSES.scout.shootCd)   myAbilityTs.side=now*10+2;
-      if(myClass==='engineer'&&now-myAbilityTs.place>=(CLASSES.engineer.placeCd||5000)) myAbilityTs.place=now*10+2; // even = wall
-      break;
-    }
+
     default: h=false;
   }
   if(h) e.preventDefault();
