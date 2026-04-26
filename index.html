@@ -348,16 +348,23 @@ window.addEventListener('keydown', e => {
       }
       break;
     }
-// Для Скаута и Инженера записываем ПРОСТО now
-    case 'KeyQ': {
+    case 'KeyQ': { 
       const now = Date.now();
-      if(myClass === 'scout' && now - myAbilityTs.side >= CLASSES.scout.shootCd) {
-         myAbilityTs.side = now; 
-         // тип (лево/право) можно отправить на сервер отдельным параметром
-      }
-      if(myClass === 'engineer' && now - myAbilityTs.place >= (CLASSES.engineer.placeCd || 5000)) {
-         myAbilityTs.place = now;
-      }
+      // Проверяем через очищенное время: Math.floor(... / 10)
+      if(myClass==='scout' && now - Math.floor(myAbilityTs.side/10) >= CLASSES.scout.shootCd)   
+        myAbilityTs.side = now * 10 + 1;
+      
+      if(myClass==='engineer' && now - Math.floor(myAbilityTs.place/10) >= (CLASSES.engineer.placeCd || 5000)) 
+        myAbilityTs.place = now * 10 + 1; 
+      break;
+    }
+    case 'KeyE': { 
+      const now = Date.now();
+      if(myClass==='scout' && now - Math.floor(myAbilityTs.side/10) >= CLASSES.scout.shootCd)   
+        myAbilityTs.side = now * 10 + 2;
+        
+      if(myClass==='engineer' && now - Math.floor(myAbilityTs.place/10) >= (CLASSES.engineer.placeCd || 5000)) 
+        myAbilityTs.place = now * 10 + 2;
       break;
     }
 
@@ -1459,18 +1466,23 @@ function updateHUD(){
     document.getElementById('ab-nuke').style.color=rem>0?'#64748b':'#f97316';
   }
   if(myClass==='engineer'){
-    const cd=CLASSES.engineer.placeCd||5000;
-    const rem=Math.max(0,cd-(nowT-myAbilityTs.place));
-    document.getElementById('ab-place').textContent=
-      rem>0?`🔧 Постройка: ${Math.ceil(rem/1000)}с`:'🔧 Q-мина / E-стена: ГОТОВО';
-    document.getElementById('ab-place').style.color=rem>0?'#64748b':'#fbbf24';
+    const cd = CLASSES.engineer.placeCd || 5000;
+    // Очищаем время от кода (последней цифры)
+    const lastUsed = Math.floor((myAbilityTs.place || 0) / 10);
+    const rem = Math.max(0, cd - (nowT - lastUsed));
+    document.getElementById('ab-place').textContent =
+      rem > 0 ? `🔧 Постройка: ${Math.ceil(rem / 1000)}с` : '🔧 Q-мина / E-стена: ГОТОВО';
+    document.getElementById('ab-place').style.color = rem > 0 ? '#64748b' : '#fbbf24';
   }
+  
   if(myClass==='scout'){
-    const cd=CLASSES.scout.shootCd;
-    const rem=Math.max(0,cd-(nowT-myAbilityTs.side));
-    document.getElementById('ab-side').textContent=
-      rem>0?`⚡ Боковой: ${rem}мс`:'⚡ Q/E — боковой выстрел';
-    document.getElementById('ab-side').style.color=rem>0?'#64748b':'#38bdf8';
+    const cd = CLASSES.scout.shootCd || 2000;
+    // Очищаем время от кода
+    const lastUsed = Math.floor((myAbilityTs.side || 0) / 10);
+    const rem = Math.max(0, cd - (nowT - lastUsed));
+    document.getElementById('ab-side').textContent =
+      rem > 0 ? `⚡ Боковой: ${Math.ceil(rem / 1000)}с` : '⚡ Q/E — боковой выстрел';
+    document.getElementById('ab-side').style.color = rem > 0 ? '#64748b' : '#38bdf8';
   }
 }
 
