@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн — School Edition v3.2</title>
+  <title>Танки Онлайн - болота и мины</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,16 +38,16 @@
     .inp::placeholder { color: #475569; }
     @keyframes glow {
       0%,100% { text-shadow: 0 0 8px #f97316; }
-      50%     { text-shadow: 0 0 28px #f97316, 0 0 56px #f97316aa; }
+      50% { text-shadow: 0 0 28px #f97316, 0 0 56px #f97316aa; }
     }
     .glow { animation: glow 2.5s ease-in-out infinite; }
     .pcard {
       display: flex; align-items: center; gap: 10px; padding: 10px 14px;
       background: rgba(0,0,0,0.35); border: 1px solid #1e3a5f; border-radius: 12px;
     }
-    .dot  { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
-    .tag  { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-    .tag-me   { background: #78350f; color: #fbbf24; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .tag { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .tag-me { background: #78350f; color: #fbbf24; }
     .tag-host { background: #14532d; color: #4ade80; }
     canvas {
       display: block; border-radius: 12px; border: 3px solid #1e3a5f;
@@ -79,33 +80,29 @@
 </head>
 <body>
 
-<!-- ЭКРАН ВХОДА -->
 <div id="screen-auth" class="screen active">
   <div class="card">
     <div style="text-align:center;margin-bottom:24px;">
-      <div style="display:inline-block;background:linear-gradient(135deg,#ea580c,#f97316);
-                  padding:14px;border-radius:16px;margin-bottom:14px;">
+      <div style="display:inline-block;background:linear-gradient(135deg,#ea580c,#f97316);padding:14px;border-radius:16px;margin-bottom:14px;">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="white">
           <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
         </svg>
       </div>
       <h1 class="retro" style="color:#f97316;font-size:13px;line-height:2;margin-bottom:6px;">ТАНКИ ОНЛАЙН</h1>
-      <p style="color:#475569;font-size:13px;">Школьная аркада • 2–6 игроков</p>
+      <p style="color:#475569;font-size:13px;">Школьная аркада - болота и мины</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <input class="inp" type="text" id="player-name" placeholder="Введите ваше имя..." maxlength="12" autocomplete="off">
-      <button class="btn btn-green" id="btn-create">🎓 Создать комнату (Учитель)</button>
+      <button class="btn btn-green" id="btn-create">Создать комнату (Учитель)</button>
       <div style="display:flex;gap:8px;align-items:stretch;">
-        <input class="inp" type="text" id="room-code-input" placeholder="КОД" maxlength="5"
-               style="width:120px;text-align:center;text-transform:uppercase;font-size:20px;font-weight:900;letter-spacing:4px;" autocomplete="off">
-        <button class="btn btn-blue" id="btn-join" style="flex:1;">🎮 Войти</button>
+        <input class="inp" type="text" id="room-code-input" placeholder="КОД" maxlength="5" style="width:120px;text-align:center;text-transform:uppercase;font-size:20px;font-weight:900;letter-spacing:4px;" autocomplete="off">
+        <button class="btn btn-blue" id="btn-join" style="flex:1;">Войти</button>
       </div>
       <div id="auth-error"></div>
     </div>
   </div>
 </div>
 
-<!-- ЭКРАН ЛОББИ -->
 <div id="screen-lobby" class="screen">
   <div class="card">
     <div style="text-align:center;margin-bottom:20px;">
@@ -122,18 +119,16 @@
     </div>
     <div id="lobby-status" style="color:#64748b;font-size:13px;text-align:center;margin-bottom:12px;"></div>
     <div id="host-controls" style="display:none;">
-      <button class="btn btn-orange" id="btn-start-game" disabled>⚔️ Начать бой!</button>
+      <button class="btn btn-orange" id="btn-start-game" disabled>Начать бой!</button>
       <p style="color:#475569;font-size:11px;text-align:center;margin-top:8px;">Минимум 2 игрока</p>
     </div>
     <div id="student-wait" style="display:none;text-align:center;padding:10px 0;">
-      <div style="font-size:28px;margin-bottom:8px;">⏳</div>
-      <p style="font-weight:700;color:#e2e8f0;">Ждём учителя...</p>
-      <p style="color:#475569;font-size:12px;margin-top:4px;">Игра начнётся автоматически</p>
+      <p style="font-weight:700;color:#e2e8f0;">Ждем учителя...</p>
+      <p style="color:#475569;font-size:12px;margin-top:4px;">Игра начнется автоматически</p>
     </div>
   </div>
 </div>
 
-<!-- ЭКРАН ИГРЫ -->
 <div id="screen-game" class="screen" style="flex-direction:column;gap:10px;align-items:center;">
   <div id="scoreboard">
     <div style="font-size:12px;color:#64748b;">Комната: <span id="ui-room" style="color:#f97316;font-weight:700;"></span></div>
@@ -147,22 +142,17 @@
       <h2 id="overlay-title" class="retro" style="font-size:20px;margin-bottom:12px;">ПОБЕДА!</h2>
       <p id="overlay-winner" style="font-size:20px;color:#fbbf24;font-weight:700;margin-bottom:8px;"></p>
       <div id="overlay-scores" style="color:#94a3b8;font-size:13px;margin-bottom:28px;line-height:1.8;"></div>
-      <button class="btn btn-orange" id="btn-menu" style="width:auto;padding:12px 40px;font-size:15px;">🏠 В меню</button>
+      <button class="btn btn-orange" id="btn-menu" style="width:auto;padding:12px 40px;font-size:15px;">В меню</button>
     </div>
-    <div id="respawn-bar">💀 Вы погибли! Возрождение через <strong id="respawn-timer">3</strong>с...</div>
+    <div id="respawn-bar">Вы погибли! Возрождение через <strong id="respawn-timer">3</strong>с...</div>
   </div>
-  <p style="color:#334155;font-size:11px;">WASD / Стрелки — движение &nbsp;|&nbsp; Пробел — огонь</p>
+  <p style="color:#334155;font-size:11px;">WASD / Стрелки - движение | Пробел - огонь | Болота замедляют | Мины взрываются при наезде</p>
 </div>
 
 <script type="module">
-import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update, onDisconnect }
-  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-// ══════════════════════════════════════════════
-//  FIREBASE CONFIG
-// ══════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyBtZHdsONjUjFjvVec7vTsjMoVTIKtsx0s",
   authDomain: "tanki-online-algo.firebaseapp.com",
@@ -174,289 +164,277 @@ const firebaseConfig = {
   measurementId: "G-5WTXB7GLPX"
 };
 const fbApp = initializeApp(firebaseConfig);
-const db    = getDatabase(fbApp);
+const db = getDatabase(fbApp);
 
-// ══════════════════════════════════════════════
-//  CONSTANTS
-// ══════════════════════════════════════════════
-const W          = 800;
-const H          = 600;
-const HALF       = 18;
-const SPEED      = 3;
-const BSPEED     = 8;
-const SHOOT_CD   = 500;
-const MAX_HP     = 3;
-const MAX_LIVES  = 3;
+const W = 800;
+const H = 600;
+const CELL = 40;
+const HALF = 18;
+const SPEED = 3;
+const BSPEED = 8;
+const SHOOT_CD = 500;
+const MAX_HP = 3;
+const MAX_LIVES = 3;
 const RESPAWN_MS = 3000;
-const INPUT_MS   = 50;
-const HOST_TICK  = 1000 / 30;
-const CELL       = 40;
+const INPUT_MS = 50;
+const HOST_TICK = 1000 / 30;
+const WALL_PAD = 0;
+const WALL_SIZE = CELL;
+const SWAMP_SLOW = 0.48;
+const MINE_DAMAGE = 2;
+const MINE_RADIUS = 20;
 
 const SPAWNS = [
-  { x:  60, y:  60, dir: 'right' },
-  { x: 740, y: 540, dir: 'left'  },
-  { x: 740, y:  60, dir: 'left'  },
-  { x:  60, y: 540, dir: 'right' },
-  { x: 400, y:  45, dir: 'down'  },
-  { x: 400, y: 555, dir: 'up'    },
+  { x: 60, y: 60, dir: 'right' },
+  { x: 740, y: 540, dir: 'left' },
+  { x: 740, y: 60, dir: 'left' },
+  { x: 60, y: 540, dir: 'right' },
+  { x: 400, y: 45, dir: 'down' },
+  { x: 400, y: 555, dir: 'up' }
 ];
 const COLORS = ['#22c55e','#ef4444','#3b82f6','#eab308','#a855f7','#f97316'];
 
-// ══════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════
-let myId        = null;
-let myName      = '';
-let roomCode    = null;
-let isHost      = false;
+let myId = null;
+let myName = '';
+let roomCode = null;
+let isHost = false;
 let gameRunning = false;
 let gameOverShown = false;
-let roomRef     = null;
-let bulletSeq   = 0;
+let roomRef = null;
+let bulletSeq = 0;
 
-// Game state (authoritative on host, synced to clients via Firebase)
 const G = {
-  players:   {},
-  bullets:   {},
-  walls:     [],
+  players: {},
+  bullets: {},
+  walls: [],
+  swamps: [],
+  mines: [],
   particles: []
 };
 
-// Input state (sent to Firebase by each client)
-const myKeys  = { up:false, down:false, left:false, right:false };
+const myKeys = { up:false, down:false, left:false, right:false };
 let myShootTs = 0;
 let lastInputSend = 0;
-
-// Host-side: collected input from all players
-const hostInput     = {};
+const hostInput = {};
 const hostLastShoot = {};
-let lastHostTick    = 0;
+let lastHostTick = 0;
 
 const canvas = document.getElementById('gameCanvas');
-const ctx    = canvas.getContext('2d');
+const ctx = canvas.getContext('2d');
 
-// ══════════════════════════════════════════════
-//  KEYBOARD
-// ══════════════════════════════════════════════
 window.addEventListener('keydown', e => {
   if (!gameRunning) return;
   let handled = true;
   switch (e.code) {
-    case 'ArrowUp':    case 'KeyW': myKeys.up    = true; break;
-    case 'ArrowDown':  case 'KeyS': myKeys.down  = true; break;
-    case 'ArrowLeft':  case 'KeyA': myKeys.left  = true; break;
+    case 'ArrowUp': case 'KeyW': myKeys.up = true; break;
+    case 'ArrowDown': case 'KeyS': myKeys.down = true; break;
+    case 'ArrowLeft': case 'KeyA': myKeys.left = true; break;
     case 'ArrowRight': case 'KeyD': myKeys.right = true; break;
-    case 'Space':
+    case 'Space': {
       const now = Date.now();
-      if (now - myShootTs >= SHOOT_CD) {
-        myShootTs = now;
-      }
+      if (now - myShootTs >= SHOOT_CD) myShootTs = now;
       break;
+    }
     default: handled = false;
   }
   if (handled) e.preventDefault();
 });
+
 window.addEventListener('keyup', e => {
   switch (e.code) {
-    case 'ArrowUp':    case 'KeyW': myKeys.up    = false; break;
-    case 'ArrowDown':  case 'KeyS': myKeys.down  = false; break;
-    case 'ArrowLeft':  case 'KeyA': myKeys.left  = false; break;
+    case 'ArrowUp': case 'KeyW': myKeys.up = false; break;
+    case 'ArrowDown': case 'KeyS': myKeys.down = false; break;
+    case 'ArrowLeft': case 'KeyA': myKeys.left = false; break;
     case 'ArrowRight': case 'KeyD': myKeys.right = false; break;
   }
 });
 
-// ══════════════════════════════════════════════
-//  UI HELPERS
-// ══════════════════════════════════════════════
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
 }
+
 function showError(msg) {
   const el = document.getElementById('auth-error');
-  el.textContent = msg; el.classList.add('show');
+  el.textContent = msg;
+  el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 4500);
 }
 
-// ══════════════════════════════════════════════
-//  MAP GENERATION
-// ══════════════════════════════════════════════
-function generateWalls() {
+function isSafeCell(cx, cy) {
+  const nearSpawn = SPAWNS.some(s => Math.abs(s.x - cx) < 105 && Math.abs(s.y - cy) < 105);
+  const inCenter = cx > 320 && cx < 480 && cy > 220 && cy < 380;
+  return !nearSpawn && !inCenter;
+}
+
+function shuffledCells() {
   const cells = [];
-  for (let c = 1; c < W/CELL-1; c++)
-    for (let r = 1; r < H/CELL-1; r++) {
-      const cx = c*CELL+CELL/2, cy = r*CELL+CELL/2;
-      const nearSpawn = SPAWNS.some(s => Math.abs(s.x-cx)<100 && Math.abs(s.y-cy)<100);
-      const inCenter  = cx>340 && cx<460 && cy>240 && cy<360;
-      if (!nearSpawn && !inCenter) cells.push({ x: c*CELL, y: r*CELL });
+  for (let c = 1; c < W / CELL - 1; c++) {
+    for (let r = 1; r < H / CELL - 1; r++) {
+      const cx = c * CELL + CELL / 2;
+      const cy = r * CELL + CELL / 2;
+      if (isSafeCell(cx, cy)) cells.push({ x:c * CELL, y:r * CELL, cx, cy });
     }
-  // Fisher-Yates shuffle
-  for (let i = cells.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
+  }
+  for (let i = cells.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
     [cells[i], cells[j]] = [cells[j], cells[i]];
   }
+  return cells;
+}
 
-  const count = 75;
-  return cells.slice(0, count).map(c => {
-    const r = Math.random();
-    if (r < 0.30) {
-      return { x:c.x, y:c.y, type:'brick', hp:1, maxHp:1 };
-    } else if (r < 0.50) {
-      return { x:c.x, y:c.y, type:'steel', hp:99, maxHp:99 };
-    } else if (r < 0.75) {
-      return { x:c.x, y:c.y, type:'swamp', hp:99, maxHp:99 };
-    } else {
-      return { x:c.x, y:c.y, type:'mine',  hp:1, maxHp:1 };
+function generateMap() {
+  const cells = shuffledCells();
+  const used = new Set();
+  const take = () => {
+    while (cells.length) {
+      const c = cells.pop();
+      const key = `${c.x}:${c.y}`;
+      if (!used.has(key)) {
+        used.add(key);
+        return c;
+      }
     }
-  });
+    return null;
+  };
+
+  const walls = [];
+  for (let i = 0; i < 50; i++) {
+    const c = take();
+    if (!c) break;
+    const steel = Math.random() < 0.22;
+    walls.push({ x:c.x, y:c.y, hp:steel ? 99 : 1, maxHp:steel ? 99 : 1, type:steel ? 'steel' : 'brick' });
+  }
+
+  const swamps = [];
+  for (let i = 0; i < 12; i++) {
+    const c = take();
+    if (!c) break;
+    swamps.push({ x:c.x, y:c.y, slow:SWAMP_SLOW });
+  }
+
+  const mines = [];
+  for (let i = 0; i < 16; i++) {
+    const c = take();
+    if (!c) break;
+    mines.push({ x:c.x + CELL / 2, y:c.y + CELL / 2, r:MINE_RADIUS, damage:MINE_DAMAGE });
+  }
+
+  return { walls, swamps, mines };
 }
 
-// ══════════════════════════════════════════════
-//  COLLISION HELPERS
-// ══════════════════════════════════════════════
-function isSolidWall(nx, ny) {
+function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+}
+
+function hitsWall(nx, ny) {
+  const tx = nx - HALF;
+  const ty = ny - HALF;
+  const ts = HALF * 2;
   for (const w of G.walls) {
     if (!w) continue;
-    if (w.type !== 'brick' && w.type !== 'steel') continue;
-    if (nx+HALF > w.x && nx-HALF < w.x+CELL &&
-        ny+HALF > w.y && ny-HALF < w.y+CELL) return true;
+    if (rectsOverlap(tx, ty, ts, ts, w.x + WALL_PAD, w.y + WALL_PAD, WALL_SIZE - WALL_PAD * 2, WALL_SIZE - WALL_PAD * 2)) return true;
   }
   return false;
 }
 
-function isInSwamp(nx, ny) {
-  for (const w of G.walls) {
-    if (!w) continue;
-    if (w.type !== 'swamp') continue;
-    if (nx+HALF > w.x && nx-HALF < w.x+CELL &&
-        ny+HALF > w.y && ny-HALF < w.y+CELL) return true;
-  }
-  return false;
-}
-
-function hitMine(nx, ny) {
-  for (let i = 0; i < G.walls.length; i++) {
-    const w = G.walls[i];
-    if (!w) continue;
-    if (w.type !== 'mine') continue;
-    if (nx+HALF > w.x+8 && nx-HALF < w.x+32 &&
-        ny+HALF > w.y+8 && ny-HALF < w.y+32) return i;
-  }
-  return -1;
+function bulletHitsWall(x, y, w) {
+  return x >= w.x + WALL_PAD && x <= w.x + WALL_SIZE - WALL_PAD && y >= w.y + WALL_PAD && y <= w.y + WALL_SIZE - WALL_PAD;
 }
 
 function outBounds(nx, ny) {
-  return nx-HALF < 0 || nx+HALF > W || ny-HALF < 0 || ny+HALF > H;
+  return nx - HALF < 0 || nx + HALF > W || ny - HALF < 0 || ny + HALF > H;
 }
 
-// ══════════════════════════════════════════════
-//  PARTICLES (local visual only)
-// ══════════════════════════════════════════════
+function inSwamp(x, y) {
+  for (const s of G.swamps) {
+    if (!s) continue;
+    if (x > s.x && x < s.x + CELL && y > s.y && y < s.y + CELL) return true;
+  }
+  return false;
+}
+
 function spawnExplosion(x, y, color, count) {
   for (let i = 0; i < count; i++) {
-    const a = Math.random()*Math.PI*2, sp = 1+Math.random()*4;
+    const a = Math.random() * Math.PI * 2;
+    const sp = 1 + Math.random() * 4;
     G.particles.push({
-      x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
-      life:20+Math.random()*20, maxLife:40,
-      color: Math.random()<0.4 ? '#fef9c3' : color,
-      size: 2+Math.random()*4
+      x, y, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp,
+      life:20 + Math.random() * 20, maxLife:40,
+      color:Math.random() < 0.4 ? '#fef9c3' : color,
+      size:2 + Math.random() * 4
     });
   }
 }
+
 function spawnDebris(x, y) {
   for (let i = 0; i < 8; i++) {
-    const a = Math.random()*Math.PI*2, sp = 1+Math.random()*2;
-    G.particles.push({
-      x:x+20, y:y+20, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
-      life:15+Math.random()*15, maxLife:30, color:'#92400e', size:2+Math.random()*3
-    });
+    const a = Math.random() * Math.PI * 2;
+    const sp = 1 + Math.random() * 2;
+    G.particles.push({ x:x + 20, y:y + 20, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp, life:15 + Math.random() * 15, maxLife:30, color:'#92400e', size:2 + Math.random() * 3 });
   }
 }
+
 function tickParticles() {
-  for (let i = G.particles.length-1; i >= 0; i--) {
+  for (let i = G.particles.length - 1; i >= 0; i--) {
     const p = G.particles[i];
     p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life--;
     if (p.life <= 0) G.particles.splice(i, 1);
   }
 }
 
-// ══════════════════════════════════════════════
-//  SOUNDS (Web Audio API)
-// ══════════════════════════════════════════════
 let audioCtx = null;
 function snd(type) {
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
     o.connect(g); g.connect(audioCtx.destination);
     const t = audioCtx.currentTime;
     if (type === 'shoot') {
-      o.type='square'; o.frequency.setValueAtTime(600,t);
-      o.frequency.exponentialRampToValueAtTime(200,t+0.08);
-      g.gain.setValueAtTime(0.08,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.08);
-      o.start(t); o.stop(t+0.08);
+      o.type = 'square'; o.frequency.setValueAtTime(600, t); o.frequency.exponentialRampToValueAtTime(200, t + 0.08);
+      g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.08); o.start(t); o.stop(t + 0.08);
     } else if (type === 'hit') {
-      o.type='sawtooth'; o.frequency.setValueAtTime(300,t);
-      o.frequency.exponentialRampToValueAtTime(80,t+0.15);
-      g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.15);
-      o.start(t); o.stop(t+0.15);
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(80, t + 0.15);
+      g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.15); o.start(t); o.stop(t + 0.15);
     } else if (type === 'explode') {
-      o.type='sawtooth'; o.frequency.setValueAtTime(150,t);
-      o.frequency.exponentialRampToValueAtTime(30,t+0.35);
-      g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
-      o.start(t); o.stop(t+0.35);
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(30, t + 0.35);
+      g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35); o.start(t); o.stop(t + 0.35);
     } else if (type === 'respawn') {
-      o.type='sine'; o.frequency.setValueAtTime(400,t);
-      o.frequency.exponentialRampToValueAtTime(800,t+0.12);
-      g.gain.setValueAtTime(0.06,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
-      o.start(t); o.stop(t+0.12);
+      o.type = 'sine'; o.frequency.setValueAtTime(400, t); o.frequency.exponentialRampToValueAtTime(800, t + 0.12);
+      g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12); o.start(t); o.stop(t + 0.12);
     }
   } catch(e) {}
 }
 
-// ══════════════════════════════════════════════
-//  INPUT SENDING (every client → Firebase)
-// ══════════════════════════════════════════════
 function sendInput() {
   if (!gameRunning || !myId || !roomCode) return;
   const now = Date.now();
   if (now - lastInputSend < INPUT_MS) return;
   lastInputSend = now;
-
-  set(ref(db, `rooms/${roomCode}/input/${myId}`), {
-    u: myKeys.up,
-    d: myKeys.down,
-    l: myKeys.left,
-    r: myKeys.right,
-    s: myShootTs
-  });
+  set(ref(db, `rooms/${roomCode}/input/${myId}`), { u:myKeys.up, d:myKeys.down, l:myKeys.left, r:myKeys.right, s:myShootTs });
 }
 
-// ══════════════════════════════════════════════
-//  AUTH — CREATE ROOM
-// ══════════════════════════════════════════════
 document.getElementById('btn-create').onclick = async () => {
   myName = document.getElementById('player-name').value.trim();
   if (!myName) return showError('Введите имя!');
 
-  roomCode = Math.random().toString(36).substring(2,7).toUpperCase();
-  isHost   = true;
-  myId     = 'p1';
-  roomRef  = ref(db, 'rooms/' + roomCode);
-
+  roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+  isHost = true;
+  myId = 'p1';
+  roomRef = ref(db, 'rooms/' + roomCode);
   const sp = SPAWNS[0];
+  const map = generateMap();
+
   await set(roomRef, {
-    status: 'waiting',
-    walls:  generateWalls(),
-    bullets: {},
-    input:  {},
-    players: {
-      p1: {
-        name:myName, color:COLORS[0],
-        x:sp.x, y:sp.y, dir:sp.dir,
-        hp:MAX_HP, lives:MAX_LIVES, score:0,
-        dead:false, respawnAt:0
-      }
+    status:'waiting',
+    walls:map.walls,
+    swamps:map.swamps,
+    mines:map.mines,
+    bullets:{},
+    input:{},
+    players:{
+      p1:{ name:myName, color:COLORS[0], x:sp.x, y:sp.y, dir:sp.dir, hp:MAX_HP, lives:MAX_LIVES, score:0, dead:false, respawnAt:0 }
     }
   });
   onDisconnect(roomRef).remove();
@@ -464,58 +442,45 @@ document.getElementById('btn-create').onclick = async () => {
   onValue(ref(db, `rooms/${roomCode}/input`), snap => {
     const data = snap.val();
     if (!data) return;
-    for (const [pid, inp] of Object.entries(data)) {
-      if (inp) hostInput[pid] = inp;
-    }
+    for (const [pid, inp] of Object.entries(data)) if (inp) hostInput[pid] = inp;
   });
 
   openLobby();
 };
 
-// ══════════════════════════════════════════════
-//  AUTH — JOIN ROOM
-// ══════════════════════════════════════════════
 document.getElementById('btn-join').onclick = async () => {
   myName = document.getElementById('player-name').value.trim();
   const code = document.getElementById('room-code-input').value.toUpperCase().trim();
-  if (!myName)           return showError('Введите имя!');
-  if (code.length !== 5) return showError('Код — ровно 5 символов!');
+  if (!myName) return showError('Введите имя!');
+  if (code.length !== 5) return showError('Код - ровно 5 символов!');
 
   roomCode = code;
-  roomRef  = ref(db, 'rooms/' + roomCode);
+  roomRef = ref(db, 'rooms/' + roomCode);
   const snap = await get(roomRef);
   const data = snap.val();
-  if (!data)                     return showError('Комната не найдена!');
-  if (data.status === 'playing') return showError('Игра уже идёт!');
+  if (!data) return showError('Комната не найдена!');
+  if (data.status === 'playing') return showError('Игра уже идет!');
 
   const pKeys = Object.keys(data.players || {});
   if (pKeys.length >= 6) return showError('Комната заполнена (6/6)!');
 
   const idx = pKeys.length;
-  myId      = 'p' + (idx + 1);
-  const sp  = SPAWNS[idx < SPAWNS.length ? idx : 0];
+  myId = 'p' + (idx + 1);
+  const sp = SPAWNS[idx < SPAWNS.length ? idx : 0];
 
   await update(ref(db, `rooms/${roomCode}/players`), {
-    [myId]: {
-      name:myName, color:COLORS[idx],
-      x:sp.x, y:sp.y, dir:sp.dir,
-      hp:MAX_HP, lives:MAX_LIVES, score:0,
-      dead:false, respawnAt:0
-    }
+    [myId]:{ name:myName, color:COLORS[idx], x:sp.x, y:sp.y, dir:sp.dir, hp:MAX_HP, lives:MAX_LIVES, score:0, dead:false, respawnAt:0 }
   });
   onDisconnect(ref(db, `rooms/${roomCode}/players/${myId}`)).remove();
   openLobby();
 };
 
-// ══════════════════════════════════════════════
-//  LOBBY
-// ══════════════════════════════════════════════
 function openLobby() {
   document.getElementById('display-room-code').textContent = roomCode;
-  document.getElementById('ui-room').textContent           = roomCode;
+  document.getElementById('ui-room').textContent = roomCode;
   showScreen('lobby');
   document.getElementById('host-controls').style.display = isHost ? '' : 'none';
-  document.getElementById('student-wait').style.display  = isHost ? 'none' : '';
+  document.getElementById('student-wait').style.display = isHost ? 'none' : '';
 
   onValue(roomRef, snap => {
     const data = snap.val();
@@ -523,7 +488,9 @@ function openLobby() {
 
     if (!(isHost && gameRunning)) {
       G.players = data.players || {};
-      G.walls   = data.walls   || [];
+      G.walls = data.walls || [];
+      G.swamps = data.swamps || [];
+      G.mines = data.mines || [];
       G.bullets = data.bullets || {};
     }
 
@@ -533,24 +500,25 @@ function openLobby() {
       <div class="pcard">
         <div class="dot" style="background:${p.color}"></div>
         <span style="font-weight:600;">${p.name}</span>
-        ${id===myId ? '<span class="tag tag-me">ВЫ</span>' : ''}
-        ${id==='p1' ? '<span class="tag tag-host">👑 Учитель</span>' : ''}
+        ${id === myId ? '<span class="tag tag-me">ВЫ</span>' : ''}
+        ${id === 'p1' ? '<span class="tag tag-host">Учитель</span>' : ''}
       </div>
     `).join('');
 
     if (isHost) {
       document.getElementById('btn-start-game').disabled = entries.length < 2;
-      document.getElementById('lobby-status').textContent =
-        entries.length < 2 ? '⏳ Ждём хотя бы одного ученика...' : `✅ Готово! ${entries.length} игроков`;
+      document.getElementById('lobby-status').textContent = entries.length < 2 ? 'Ждем хотя бы одного ученика...' : `Готово! ${entries.length} игроков`;
     }
 
     if (data.status === 'playing' && !gameRunning) {
-      gameRunning   = true;
+      gameRunning = true;
       gameOverShown = false;
-      G.particles   = [];
+      G.particles = [];
       if (isHost) {
         G.players = JSON.parse(JSON.stringify(data.players || {}));
-        G.walls   = JSON.parse(JSON.stringify(data.walls   || []));
+        G.walls = JSON.parse(JSON.stringify(data.walls || []));
+        G.swamps = JSON.parse(JSON.stringify(data.swamps || []));
+        G.mines = JSON.parse(JSON.stringify(data.mines || []));
         G.bullets = {};
       }
       showScreen('game');
@@ -564,18 +532,12 @@ function openLobby() {
   });
 }
 
-document.getElementById('btn-start-game').onclick = () =>
-  update(roomRef, { status: 'playing' });
-
+document.getElementById('btn-start-game').onclick = () => update(roomRef, { status:'playing' });
 document.getElementById('btn-menu').onclick = () => location.reload();
 
-// ══════════════════════════════════════════════
-//  GAME LOOP
-// ══════════════════════════════════════════════
 function gameLoop(ts) {
   if (!gameRunning) return;
   requestAnimationFrame(gameLoop);
-
   sendInput();
   if (isHost) hostTick(ts);
   tickParticles();
@@ -583,63 +545,87 @@ function gameLoop(ts) {
   updateHUD();
 }
 
-// ══════════════════════════════════════════════
-//  HOST TICK
-// ══════════════════════════════════════════════
+function damagePlayer(pid, damage, fb, now, killerId = null) {
+  const t = G.players[pid];
+  if (!t || t.dead) return;
+  const newHp = (t.hp || 1) - damage;
+  if (newHp <= 0) {
+    const nl = (t.lives || 1) - 1;
+    t.hp = 0; t.lives = nl; t.dead = true; t.respawnAt = nl > 0 ? now + RESPAWN_MS : 0;
+    fb[`players/${pid}/hp`] = 0;
+    fb[`players/${pid}/lives`] = nl;
+    fb[`players/${pid}/dead`] = true;
+    fb[`players/${pid}/respawnAt`] = t.respawnAt;
+    if (killerId && killerId !== pid && G.players[killerId]) {
+      G.players[killerId].score = (G.players[killerId].score || 0) + 1;
+      fb[`players/${killerId}/score`] = G.players[killerId].score;
+    }
+    spawnExplosion(t.x, t.y, t.color || '#ff0000', 25);
+    snd('explode');
+  } else {
+    t.hp = newHp;
+    fb[`players/${pid}/hp`] = newHp;
+    spawnExplosion(t.x, t.y, '#fef9c3', 8);
+    snd('hit');
+  }
+}
+
 function hostTick(ts) {
   if (ts - lastHostTick < HOST_TICK) return;
   lastHostTick = ts;
 
   const now = Date.now();
   const fb = {};
+  let minesDirty = false;
 
-  // ── 1. Move tanks ─────────────────────────────────────
   for (const [pid, p] of Object.entries(G.players)) {
     if (p.dead) continue;
-
     const inp = hostInput[pid];
     if (!inp) continue;
 
-    let dx = 0, dy = 0, ndir = p.dir;
-    if      (inp.u) { dy = -1; ndir = 'up'; }
-    else if (inp.d) { dy = 1;  ndir = 'down'; }
-    else if (inp.l) { dx = -1; ndir = 'left'; }
-    else if (inp.r) { dx = 1;  ndir = 'right'; }
+    let pSpeed = (pid === 'p1') ? SPEED : SPEED * 1.25;
+    if (inSwamp(p.x, p.y)) pSpeed *= SWAMP_SLOW;
 
-    if (dx !== 0 || dy !== 0) {
-      const baseSpeed = (pid === 'p1') ? SPEED : SPEED * 1.25;
-      const inSwamp   = isInSwamp(p.x, p.y);
-      const speed     = baseSpeed * (inSwamp ? 0.35 : 1);
-      const nx = p.x + dx * speed;
-      const ny = p.y + dy * speed;
+    let nx = p.x;
+    let ny = p.y;
+    let ndir = p.dir;
+    let moved = false;
+    if (inp.u) { ny -= pSpeed; ndir = 'up'; moved = true; }
+    else if (inp.d) { ny += pSpeed; ndir = 'down'; moved = true; }
+    else if (inp.l) { nx -= pSpeed; ndir = 'left'; moved = true; }
+    else if (inp.r) { nx += pSpeed; ndir = 'right'; moved = true; }
 
-      if (!outBounds(nx, ny) && !isSolidWall(nx, ny)) {
-        p.x = nx; p.y = ny; p.dir = ndir;
-        fb[`players/${pid}/x`]   = nx;
-        fb[`players/${pid}/y`]   = ny;
-        fb[`players/${pid}/dir`] = ndir;
+    if (moved && !outBounds(nx, ny) && !hitsWall(nx, ny)) {
+      p.x = nx; p.y = ny; p.dir = ndir;
+      fb[`players/${pid}/x`] = nx;
+      fb[`players/${pid}/y`] = ny;
+      fb[`players/${pid}/dir`] = ndir;
+    } else if (moved && p.dir !== ndir) {
+      p.dir = ndir;
+      fb[`players/${pid}/dir`] = ndir;
+    }
+
+    for (let i = 0; i < G.mines.length; i++) {
+      const m = G.mines[i];
+      if (!m) continue;
+      if (Math.hypot(p.x - m.x, p.y - m.y) < HALF + (m.r || MINE_RADIUS) * 0.65) {
+        G.mines[i] = null;
+        minesDirty = true;
+        damagePlayer(pid, m.damage || MINE_DAMAGE, fb, now);
+        spawnExplosion(m.x, m.y, '#f97316', 22);
+        break;
       }
     }
 
-    // Mine check
-    const mineIdx = hitMine(p.x, p.y);
-    if (mineIdx !== -1) {
-      G.walls[mineIdx] = null;
-      wallsDirty = true;
-      damagePlayer(pid, MAX_HP, null, fb);
-      spawnExplosion(p.x, p.y, '#ef4444', 30);
-      snd('explode');
-    }
-
-    // Shooting
-    if (inp.s && inp.s > (hostLastShoot[pid] || 0)) {
+    if (inp.s && inp.s > (hostLastShoot[pid] || 0) && !p.dead) {
       hostLastShoot[pid] = inp.s;
       const off = HALF + 14;
-      let bx = p.x, by = p.y;
-      if      (p.dir === 'up')    by -= off;
-      else if (p.dir === 'down')  by += off;
-      else if (p.dir === 'left')  bx -= off;
-      else                        bx += off;
+      let bx = p.x;
+      let by = p.y;
+      if (p.dir === 'up') by -= off;
+      else if (p.dir === 'down') by += off;
+      else if (p.dir === 'left') bx -= off;
+      else bx += off;
 
       const bId = 'b' + (++bulletSeq);
       const bullet = { x:bx, y:by, dir:p.dir, owner:pid };
@@ -649,73 +635,79 @@ function hostTick(ts) {
     }
   }
 
-  // ── 2. Respawn dead players ───────────────────────────
   for (const [pid, p] of Object.entries(G.players)) {
     if (p.dead && p.lives > 0 && p.respawnAt > 0 && now >= p.respawnAt) {
-      const idx = parseInt(pid.replace('p','')) - 1;
-      const sp  = SPAWNS[idx < SPAWNS.length ? idx : 0];
+      const idx = parseInt(pid.replace('p', ''), 10) - 1;
+      const sp = SPAWNS[idx < SPAWNS.length ? idx : 0];
       p.dead = false; p.hp = MAX_HP; p.x = sp.x; p.y = sp.y; p.dir = sp.dir; p.respawnAt = 0;
-      fb[`players/${pid}/dead`]      = false;
-      fb[`players/${pid}/hp`]        = MAX_HP;
-      fb[`players/${pid}/x`]         = sp.x;
-      fb[`players/${pid}/y`]         = sp.y;
-      fb[`players/${pid}/dir`]       = sp.dir;
+      fb[`players/${pid}/dead`] = false;
+      fb[`players/${pid}/hp`] = MAX_HP;
+      fb[`players/${pid}/x`] = sp.x;
+      fb[`players/${pid}/y`] = sp.y;
+      fb[`players/${pid}/dir`] = sp.dir;
       fb[`players/${pid}/respawnAt`] = 0;
       snd('respawn');
     }
   }
 
-  // ── 3. Move bullets & check collisions ────────────────
   let wallsDirty = false;
   const bulletsToDelete = [];
 
   for (const [bId, b] of Object.entries(G.bullets)) {
     if (!b) { bulletsToDelete.push(bId); continue; }
-
     let { x, y, dir, owner } = b;
     const bSpeed = (owner === 'p1') ? BSPEED : BSPEED * 1.35;
-    if      (dir === 'up')    y -= bSpeed;
-    else if (dir === 'down')  y += bSpeed;
-    else if (dir === 'left')  x -= bSpeed;
-    else                      x += bSpeed;
+    if (dir === 'up') y -= bSpeed;
+    else if (dir === 'down') y += bSpeed;
+    else if (dir === 'left') x -= bSpeed;
+    else x += bSpeed;
 
-    // Out of bounds
     if (x < 0 || x > W || y < 0 || y > H) {
       bulletsToDelete.push(bId);
       continue;
     }
 
-    // Wall collision (only solid walls block bullets)
     let hitWall = false;
     for (let i = 0; i < G.walls.length; i++) {
       const w = G.walls[i];
       if (!w) continue;
-      if (w.type !== 'brick' && w.type !== 'steel') continue;
-      if (x > w.x && x < w.x+CELL && y > w.y && y < w.y+CELL) {
-        if (w.type === 'brick') {
+      if (bulletHitsWall(x, y, w)) {
+        if (w.hp < 99) {
           w.hp--;
           if (w.hp <= 0) { G.walls[i] = null; spawnDebris(w.x, w.y); }
-          wallsDirty = true;
         }
         hitWall = true;
+        wallsDirty = true;
         break;
       }
     }
     if (hitWall) { bulletsToDelete.push(bId); continue; }
 
-    // Tank collision
+    for (let i = 0; i < G.mines.length; i++) {
+      const m = G.mines[i];
+      if (!m) continue;
+      if (Math.hypot(x - m.x, y - m.y) < (m.r || MINE_RADIUS)) {
+        G.mines[i] = null;
+        minesDirty = true;
+        bulletsToDelete.push(bId);
+        spawnExplosion(m.x, m.y, '#f97316', 18);
+        snd('explode');
+        break;
+      }
+    }
+    if (bulletsToDelete.includes(bId)) continue;
+
     let hitPid = null;
     for (const [pid, p] of Object.entries(G.players)) {
       if (pid === owner || p.dead) continue;
       if (Math.hypot(p.x - x, p.y - y) < HALF + 6) { hitPid = pid; break; }
     }
     if (hitPid) {
-      damagePlayer(hitPid, 1, owner, fb);
+      damagePlayer(hitPid, 1, fb, now, owner);
       bulletsToDelete.push(bId);
       continue;
     }
 
-    // Bullet flies on
     b.x = x; b.y = y;
     fb[`bullets/${bId}`] = { x, y, dir, owner };
   }
@@ -726,53 +718,18 @@ function hostTick(ts) {
   }
 
   if (wallsDirty) {
-    const cleaned = G.walls.filter(Boolean);
-    G.walls = cleaned;
-    fb['walls'] = cleaned;
+    G.walls = G.walls.filter(Boolean);
+    fb.walls = G.walls;
+  }
+  if (minesDirty) {
+    G.mines = G.mines.filter(Boolean);
+    fb.mines = G.mines;
   }
 
-  // ── 4. Single Firebase write ──────────────────────────
-  if (Object.keys(fb).length > 0) {
-    update(ref(db, `rooms/${roomCode}`), fb);
-  }
-
-  // ── 5. Check end game ─────────────────────────────────
+  if (Object.keys(fb).length > 0) update(ref(db, `rooms/${roomCode}`), fb);
   checkEndGame();
 }
 
-// ══════════════════════════════════════════════
-//  DAMAGE / KILL HELPER
-// ══════════════════════════════════════════════
-function damagePlayer(pid, amount, killerId, fb) {
-  const p = G.players[pid];
-  if (!p || p.dead) return;
-  const newHp = (p.hp || MAX_HP) - amount;
-  if (newHp <= 0) {
-    const nl = (p.lives || MAX_LIVES) - 1;
-    p.hp = 0; p.lives = nl; p.dead = true;
-    p.respawnAt = nl > 0 ? Date.now() + RESPAWN_MS : 0;
-    fb[`players/${pid}/hp`]        = 0;
-    fb[`players/${pid}/lives`]     = nl;
-    fb[`players/${pid}/dead`]      = true;
-    fb[`players/${pid}/respawnAt`] = p.respawnAt;
-    if (killerId && G.players[killerId]) {
-      const sh = G.players[killerId];
-      sh.score = (sh.score || 0) + 1;
-      fb[`players/${killerId}/score`] = sh.score;
-    }
-    spawnExplosion(p.x, p.y, p.color || '#ff0000', 25);
-    snd('explode');
-  } else {
-    p.hp = newHp;
-    fb[`players/${pid}/hp`] = newHp;
-    spawnExplosion(p.x, p.y, '#fef9c3', 8);
-    snd('hit');
-  }
-}
-
-// ══════════════════════════════════════════════
-//  END GAME
-// ══════════════════════════════════════════════
 function checkEndGame() {
   if (gameOverShown) return;
   const all = Object.values(G.players);
@@ -780,160 +737,146 @@ function checkEndGame() {
   const alive = all.filter(p => p.lives > 0);
   if (alive.length > 1) return;
 
-  gameRunning   = false;
+  gameRunning = false;
   gameOverShown = true;
   const winner = alive[0] || null;
-  update(roomRef, { status:'ended', winner: winner ? winner.name : null });
+  update(roomRef, { status:'ended', winner:winner ? winner.name : null });
   showGameOver(winner ? winner.name : null);
 }
 
 function showGameOver(winnerName) {
-  gameRunning   = false;
+  gameRunning = false;
   gameOverShown = true;
   const isWin = winnerName && winnerName === myName;
-  document.getElementById('overlay-icon').textContent   = isWin ? '🏆' : '💀';
-  document.getElementById('overlay-title').textContent  = isWin ? 'ПОБЕДА!' : 'КОНЕЦ БОЯ';
-  document.getElementById('overlay-winner').textContent = winnerName ? `Победитель: ${winnerName}` : 'Все выбыли — ничья!';
-  document.getElementById('overlay-scores').innerHTML   =
-    Object.values(G.players)
-      .sort((a,b) => (b.score||0) - (a.score||0))
-      .map(p => `${p.name}: ${p.score||0} очков`)
-      .join('<br>');
+  document.getElementById('overlay-icon').textContent = isWin ? '🏆' : '💀';
+  document.getElementById('overlay-title').textContent = isWin ? 'ПОБЕДА!' : 'КОНЕЦ БОЯ';
+  document.getElementById('overlay-winner').textContent = winnerName ? `Победитель: ${winnerName}` : 'Все выбыли - ничья!';
+  document.getElementById('overlay-scores').innerHTML = Object.values(G.players)
+    .sort((a,b) => (b.score || 0) - (a.score || 0))
+    .map(p => `${p.name}: ${p.score || 0} очков`)
+    .join('<br>');
   document.getElementById('game-overlay').classList.add('show');
   if (isHost) setTimeout(() => set(roomRef, null), 60000);
 }
 
-// ══════════════════════════════════════════════
-//  RENDERING
-// ══════════════════════════════════════════════
 function render() {
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, W, H);
 
-  // Grid
   ctx.strokeStyle = '#1a2640'; ctx.lineWidth = 1;
-  for (let x = 0; x <= W; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
-  }
-  for (let y = 0; y <= H; y += 40) {
-    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
-  }
+  for (let x = 0; x <= W; x += CELL) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y <= H; y += CELL) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
+  drawSwamps();
+  drawMines();
   drawWalls();
   drawTanks();
   drawBullets();
   drawParticles();
 }
 
+function drawSwamps() {
+  for (const s of G.swamps) {
+    if (!s) continue;
+    const grd = ctx.createRadialGradient(s.x + 20, s.y + 20, 3, s.x + 20, s.y + 20, 28);
+    grd.addColorStop(0, 'rgba(63,98,18,0.95)');
+    grd.addColorStop(1, 'rgba(20,83,45,0.62)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(s.x, s.y, CELL, CELL);
+    ctx.strokeStyle = 'rgba(132,204,22,0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(s.x + 14, s.y + 15, 6, 0, Math.PI * 2);
+    ctx.arc(s.x + 27, s.y + 27, 8, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+function drawMines() {
+  for (const m of G.mines) {
+    if (!m) continue;
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    ctx.fillStyle = '#111827';
+    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2;
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4;
+      ctx.beginPath(); ctx.moveTo(Math.cos(a) * 7, Math.sin(a) * 7); ctx.lineTo(Math.cos(a) * 15, Math.sin(a) * 15); ctx.stroke();
+    }
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
 function drawWalls() {
   for (const w of G.walls) {
     if (!w) continue;
-    if (w.type === 'steel') {
-      ctx.fillStyle = '#334155'; ctx.fillRect(w.x, w.y, CELL, CELL);
-      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2; ctx.strokeRect(w.x, w.y, CELL, CELL);
-      ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(w.x+6, w.y+6); ctx.lineTo(w.x+34, w.y+34); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+34, w.y+6); ctx.lineTo(w.x+6, w.y+34); ctx.stroke();
-    } else if (w.type === 'brick') {
+    if (w.hp >= 99) {
+      ctx.fillStyle = '#334155'; ctx.fillRect(w.x, w.y, WALL_SIZE, WALL_SIZE);
+      ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2; ctx.strokeRect(w.x + 1, w.y + 1, WALL_SIZE - 2, WALL_SIZE - 2);
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(w.x + 7, w.y + 7); ctx.lineTo(w.x + 33, w.y + 33); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x + 33, w.y + 7); ctx.lineTo(w.x + 7, w.y + 33); ctx.stroke();
+    } else {
       const dmg = 1 - w.hp / (w.maxHp || 1);
-      const r = Math.round(160-dmg*60), g = Math.round(50-dmg*20), b = Math.round(20-dmg*10);
-      ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fillRect(w.x, w.y, CELL, CELL);
-      ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1; ctx.strokeRect(w.x, w.y, CELL, CELL);
-      ctx.beginPath(); ctx.moveTo(w.x, w.y+20); ctx.lineTo(w.x+40, w.y+20); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+20, w.y); ctx.lineTo(w.x+20, w.y+20); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+10, w.y+20); ctx.lineTo(w.x+10, w.y+40); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w.x+30, w.y+20); ctx.lineTo(w.x+30, w.y+40); ctx.stroke();
-    } else if (w.type === 'swamp') {
-      ctx.fillStyle = '#1a3a2a'; ctx.fillRect(w.x, w.y, CELL, CELL);
-      ctx.fillStyle = '#22553a';
-      const blobs = [[6,6],[26,10],[10,26],[30,30],[14,34],[34,14]];
-      for (const [dx,dy] of blobs) {
-        ctx.beginPath(); ctx.arc(w.x+dx, w.y+dy, 3.5, 0, Math.PI*2); ctx.fill();
-      }
-      ctx.fillStyle = '#2d6a4a';
-      const blobs2 = [[16,8],[36,18],[8,28],[28,38]];
-      for (const [dx,dy] of blobs2) {
-        ctx.beginPath(); ctx.arc(w.x+dx, w.y+dy, 2.5, 0, Math.PI*2); ctx.fill();
-      }
-      ctx.strokeStyle = '#143820'; ctx.lineWidth = 1; ctx.strokeRect(w.x, w.y, CELL, CELL);
-    } else if (w.type === 'mine') {
-      ctx.fillStyle = '#2a0a0a'; ctx.fillRect(w.x, w.y, CELL, CELL);
-      const cx = w.x+20, cy = w.y+20;
-      ctx.fillStyle = '#7f1d1d';
-      ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#dc2626';
-      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#fca5a5';
-      ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill();
-      const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5;
-      ctx.strokeStyle = `rgba(239,68,68,${pulse})`; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI*2); ctx.stroke();
-      ctx.strokeStyle = '#450a0a'; ctx.lineWidth = 1; ctx.strokeRect(w.x, w.y, CELL, CELL);
+      const r = Math.round(160 - dmg * 60), g = Math.round(50 - dmg * 20), b = Math.round(20 - dmg * 10);
+      ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fillRect(w.x, w.y, WALL_SIZE, WALL_SIZE);
+      ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1; ctx.strokeRect(w.x + 0.5, w.y + 0.5, WALL_SIZE - 1, WALL_SIZE - 1);
+      ctx.beginPath(); ctx.moveTo(w.x, w.y + 20); ctx.lineTo(w.x + 40, w.y + 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x + 20, w.y); ctx.lineTo(w.x + 20, w.y + 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x + 10, w.y + 20); ctx.lineTo(w.x + 10, w.y + 40); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.x + 30, w.y + 20); ctx.lineTo(w.x + 30, w.y + 40); ctx.stroke();
     }
   }
 }
 
 function drawTanks() {
   for (const [id, p] of Object.entries(G.players)) {
-    if (!p || p.dead) continue;
-    if (typeof p.x !== 'number' || typeof p.y !== 'number') continue;
-
+    if (!p || p.dead || typeof p.x !== 'number' || typeof p.y !== 'number') continue;
     const { x, y, dir, color, hp } = p;
-    const S = HALF, isMe = id === myId;
+    const S = HALF;
+    const isMe = id === myId;
 
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.fillRect(x-S+4, y-S+4, S*2, S*2);
-
-    // Treads
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x - S + 4, y - S + 4, S * 2, S * 2);
     ctx.fillStyle = '#374151';
     if (dir === 'up' || dir === 'down') {
-      ctx.fillRect(x-S-5, y-S, 8, S*2);
-      ctx.fillRect(x+S-3, y-S, 8, S*2);
+      ctx.fillRect(x - S - 5, y - S, 8, S * 2);
+      ctx.fillRect(x + S - 3, y - S, 8, S * 2);
     } else {
-      ctx.fillRect(x-S, y-S-5, S*2, 8);
-      ctx.fillRect(x-S, y+S-3, S*2, 8);
+      ctx.fillRect(x - S, y - S - 5, S * 2, 8);
+      ctx.fillRect(x - S, y + S - 3, S * 2, 8);
     }
 
-    // Body
-    ctx.fillStyle = color || '#888';
-    ctx.fillRect(x-S, y-S, S*2, S*2);
-
-    // Turret
+    ctx.fillStyle = color || '#888'; ctx.fillRect(x - S, y - S, S * 2, S * 2);
     ctx.fillStyle = shadeColor(color || '#888', -30);
-    ctx.beginPath(); ctx.arc(x, y, S*0.54, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, S * 0.54, 0, Math.PI * 2); ctx.fill();
 
-    // Barrel
     ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 5; ctx.lineCap = 'round';
     const gl = S + 13;
     ctx.beginPath();
-    if      (dir === 'up')    { ctx.moveTo(x, y); ctx.lineTo(x, y-gl); }
-    else if (dir === 'down')  { ctx.moveTo(x, y); ctx.lineTo(x, y+gl); }
-    else if (dir === 'left')  { ctx.moveTo(x, y); ctx.lineTo(x-gl, y); }
-    else                      { ctx.moveTo(x, y); ctx.lineTo(x+gl, y); }
+    if (dir === 'up') { ctx.moveTo(x, y); ctx.lineTo(x, y - gl); }
+    else if (dir === 'down') { ctx.moveTo(x, y); ctx.lineTo(x, y + gl); }
+    else if (dir === 'left') { ctx.moveTo(x, y); ctx.lineTo(x - gl, y); }
+    else { ctx.moveTo(x, y); ctx.lineTo(x + gl, y); }
     ctx.stroke();
 
-    // My tank highlight
     if (isMe) {
-      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
-      ctx.setLineDash([5,3]);
-      ctx.strokeRect(x-S-2, y-S-2, S*2+4, S*2+4);
-      ctx.setLineDash([]);
+      ctx.strokeStyle = inSwamp(x, y) ? '#84cc16' : '#fbbf24';
+      ctx.lineWidth = 2; ctx.setLineDash([5,3]); ctx.strokeRect(x - S - 2, y - S - 2, S * 2 + 4, S * 2 + 4); ctx.setLineDash([]);
     }
 
-    // HP bar
-    const bw = S*2;
-    ctx.fillStyle = '#1f2937'; ctx.fillRect(x-S, y-S-11, bw, 6);
+    const bw = S * 2;
+    ctx.fillStyle = '#1f2937'; ctx.fillRect(x - S, y - S - 11, bw, 6);
     const hpRatio = (hp || 0) / MAX_HP;
     ctx.fillStyle = hpRatio >= 1 ? '#22c55e' : hpRatio >= 0.5 ? '#eab308' : '#ef4444';
-    ctx.fillRect(x-S, y-S-11, bw * hpRatio, 6);
+    ctx.fillRect(x - S, y - S - 11, bw * hpRatio, 6);
 
-    // Name
     ctx.fillStyle = isMe ? '#fde68a' : '#f1f5f9';
     ctx.font = 'bold 11px Segoe UI'; ctx.textAlign = 'center';
-    ctx.shadowColor = '#000'; ctx.shadowBlur = 5;
-    ctx.fillText(p.name || '???', x, y-S-17);
-    ctx.shadowBlur = 0;
+    ctx.shadowColor = '#000'; ctx.shadowBlur = 5; ctx.fillText(p.name || '???', x, y - S - 17); ctx.shadowBlur = 0;
   }
 }
 
@@ -941,22 +884,17 @@ function drawBullets() {
   for (const b of Object.values(G.bullets)) {
     if (!b || typeof b.x !== 'number') continue;
     const col = G.players[b.owner]?.color || '#fbbf24';
-
-    // Trail
     ctx.strokeStyle = col + '66'; ctx.lineWidth = 3; ctx.lineCap = 'round';
     const tl = 14;
     ctx.beginPath();
-    if      (b.dir === 'up')    { ctx.moveTo(b.x, b.y+tl); ctx.lineTo(b.x, b.y); }
-    else if (b.dir === 'down')  { ctx.moveTo(b.x, b.y-tl); ctx.lineTo(b.x, b.y); }
-    else if (b.dir === 'left')  { ctx.moveTo(b.x+tl, b.y); ctx.lineTo(b.x, b.y); }
-    else                        { ctx.moveTo(b.x-tl, b.y); ctx.lineTo(b.x, b.y); }
+    if (b.dir === 'up') { ctx.moveTo(b.x, b.y + tl); ctx.lineTo(b.x, b.y); }
+    else if (b.dir === 'down') { ctx.moveTo(b.x, b.y - tl); ctx.lineTo(b.x, b.y); }
+    else if (b.dir === 'left') { ctx.moveTo(b.x + tl, b.y); ctx.lineTo(b.x, b.y); }
+    else { ctx.moveTo(b.x - tl, b.y); ctx.lineTo(b.x, b.y); }
     ctx.stroke();
 
-    // Core glow
     ctx.shadowBlur = 14; ctx.shadowColor = col;
-    ctx.fillStyle = '#fef9c3';
-    ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fef9c3'; ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
   }
 }
 
@@ -965,40 +903,34 @@ function drawParticles() {
     const a = p.life / p.maxLife;
     ctx.globalAlpha = a;
     ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.size*a, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * a, 0, Math.PI * 2); ctx.fill();
   }
   ctx.globalAlpha = 1;
 }
 
 function shadeColor(hex, amt) {
   if (!hex || hex.charAt(0) !== '#') return hex || '#888';
-  const n = parseInt(hex.replace('#',''), 16);
+  const n = parseInt(hex.replace('#', ''), 16);
   const r = Math.max(0, Math.min(255, (n >> 16) + amt));
   const g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
   const b = Math.max(0, Math.min(255, (n & 0xff) + amt));
   return `rgb(${r},${g},${b})`;
 }
 
-// ══════════════════════════════════════════════
-//  HUD
-// ══════════════════════════════════════════════
 function updateHUD() {
   const me = G.players[myId];
   if (!me) return;
 
   const lives = Math.max(0, me.lives || 0);
-  document.getElementById('ui-lives').innerHTML =
-    '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, MAX_LIVES - lives));
+  document.getElementById('ui-lives').innerHTML = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, MAX_LIVES - lives));
 
-  const sorted = Object.values(G.players).sort((a,b) => (b.score||0) - (a.score||0));
+  const sorted = Object.values(G.players).sort((a,b) => (b.score || 0) - (a.score || 0));
   document.getElementById('ui-scores').innerHTML = sorted.map(p =>
-    `<span style="color:${p.color || '#888'};font-weight:${p.name===myName?900:500};">
-      ${p.name}: ${p.score||0}${(p.lives||0)<=0?' 💀':''}
-    </span>`
+    `<span style="color:${p.color || '#888'};font-weight:${p.name === myName ? 900 : 500};">${p.name}: ${p.score || 0}${(p.lives || 0) <= 0 ? ' 💀' : ''}</span>`
   ).join('');
 
   const bar = document.getElementById('respawn-bar');
-  if (me.dead && (me.lives||0) > 0 && me.respawnAt > 0) {
+  if (me.dead && (me.lives || 0) > 0 && me.respawnAt > 0) {
     const sec = Math.max(0, Math.ceil((me.respawnAt - Date.now()) / 1000));
     document.getElementById('respawn-timer').textContent = sec;
     bar.classList.add('show');
@@ -1007,11 +939,8 @@ function updateHUD() {
   }
 }
 
-// ══════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════
 document.getElementById('player-name').focus();
-console.log('🎮 Танки Онлайн v3.2 — swamps, mines, wide walls');
+console.log('Tanki Online: swamps, mines and full-width walls enabled');
 </script>
 </body>
 </html>
