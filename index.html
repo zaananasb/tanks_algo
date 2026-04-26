@@ -212,6 +212,12 @@ const G = {
   particles: []
 };
 
+// Client-side interpolation: we smoothly move render positions towards server positions
+// For non-host clients, this eliminates the jittery movement from Firebase updates
+const renderTanks = {}; // { pid: { x, y } }
+const renderTargets = {}; // { pid: { x, y } }
+const INTERP_SPEED = 0.18; // how fast we catch up per frame (0-1)
+
 const myKeys = { up:false, down:false, left:false, right:false };
 let myShootTs = 0;
 let lastInputSend = 0;
@@ -487,7 +493,22 @@ function openLobby() {
     if (!data) return;
 
     if (!(isHost && gameRunning)) {
-      G.players = data.players || {};
+      const newPlayers = data.players || {};
+      // For non-host clients: initialize render targets and render positions
+      for (const [pid, p] of Object.entries(newPlayers)) {
+        if (!renderTargets[pid]) {
+          renderTargets[pid] = { x: p.x, y: p.y };
+          renderTanks[pid] = { x: p.x, y: p.y };
+        } else {
+          renderTargets[pid].x = p.x;
+          renderTargets[pid].y = p.y;
+        }
+      }
+      // Remove tanks that left
+      for (const pid of Object.keys(renderTargets)) {
+        if (!newPlayers[pid]) { delete renderTargets[pid]; delete renderTanks[pid]; }
+      }
+      G.players = newPlayers;
       G.walls = data.walls || [];
       G.swamps = data.swamps || [];
       G.mines = data.mines || [];
@@ -520,6 +541,13 @@ function openLobby() {
         G.swamps = JSON.parse(JSON.stringify(data.swamps || []));
         G.mines = JSON.parse(JSON.stringify(data.mines || []));
         G.bullets = {};
+      } else {
+        // Initialize interpolation for non-host
+        const pl = data.players || {};
+        for (const [pid, p] of Object.entries(pl)) {
+          renderTargets[pid] = { x: p.x, y: p.y };
+          renderTanks[pid] = { x: p.x, y: p.y };
+        }
       }
       showScreen('game');
       requestAnimationFrame(gameLoop);
@@ -541,6 +569,7 @@ function gameLoop(ts) {
   sendInput();
   if (isHost) hostTick(ts);
   tickParticles();
+  if (!isHost) interpolateTanks();
   render();
   updateHUD();
 }
@@ -730,6 +759,25 @@ function hostTick(ts) {
   checkEndGame();
 }
 
+// Smooth interpolation for non-host clients: move renderTanks towards renderTargets
+function interpolateTanks() {
+  for (const [pid, p] of Object.entries(G.players)) {
+    if (pid === myId) continue; // our own tank is controlled locally, no interpolation needed
+    if (!renderTanks[pid] || !renderTargets[pid] || p.dead) continue;
+    const rt = renderTanks[pid];
+    const tg = renderTargets[pid];
+    // Lerp towards target
+    rt.x += (tg.x - rt.x) * INTERP_SPEED;
+    rt.y += (tg.y - rt.y) * INTERP_SPEED;
+    // Snap if very close
+    if (Math.abs(rt.x - tg.x) < 0.3) rt.x = tg.x;
+    if (Math.abs(rt.y - tg.y) < 0.3) rt.y = tg.y;
+    // Override the player's x,y for rendering only (we draw from G.players)
+    p._renderX = rt.x;
+    p._renderY = rt.y;
+  }
+}
+
 function checkEndGame() {
   if (gameOverShown) return;
   const all = Object.values(G.players);
@@ -836,9 +884,13 @@ function drawWalls() {
 function drawTanks() {
   for (const [id, p] of Object.entries(G.players)) {
     if (!p || p.dead || typeof p.x !== 'number' || typeof p.y !== 'number') continue;
-    const { x, y, dir, color, hp } = p;
-    const S = HALF;
     const isMe = id === myId;
+    // Use interpolated position for non-host clients (other tanks)
+    const drawX = (!isMe && !isHost && typeof p._renderX === 'number') ? p._renderX : p.x;
+    const drawY = (!isMe && !isHost && typeof p._renderY === 'number') ? p._renderY : p.y;
+    const { dir, color, hp } = p;
+    const x = drawX, y = drawY;
+    const S = HALF;
 
     ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x - S + 4, y - S + 4, S * 2, S * 2);
     ctx.fillStyle = '#374151';
