@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн — School Edition v4</title>
+  <title>Танки Онлайн — School Edition v4.1</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -116,7 +116,7 @@
         </svg>
       </div>
       <h1 class="retro" style="color:#f97316;font-size:12px;line-height:2;margin-bottom:4px;">ТАНКИ ОНЛАЙН</h1>
-      <p style="color:#475569;font-size:12px;">School Edition v4 · 2–6 игроков</p>
+      <p style="color:#475569;font-size:12px;">School Edition v4.1 · 2–6 игроков</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:11px;">
       <input class="inp" type="text" id="player-name" placeholder="Введите ваше имя..." maxlength="12" autocomplete="off">
@@ -142,12 +142,12 @@
       <div class="cls-card selected" data-cls="basic">
         <div class="cls-icon">🛡️</div>
         <div class="cls-name">Базовый</div>
-        <div class="cls-desc">3 HP · Стд. скорость<br>Мины наносят -1 урон<br>КД 600 мс</div>
+        <div class="cls-desc">3 HP · Быстрый<br>Мины наносят -1 урон<br>КД 500 мс</div>
       </div>
       <div class="cls-card" data-cls="scout">
         <div class="cls-icon">⚡</div>
         <div class="cls-name">Скаут</div>
-        <div class="cls-desc">2 HP · Быстрый<br>Q/E — боковой выстрел<br>КД 400 мс</div>
+        <div class="cls-desc">2 HP · Оч. Быстрый<br>Q/E — боковой выстрел<br>КД 400 мс</div>
       </div>
       <div class="cls-card" data-cls="heavy">
         <div class="cls-icon">💣</div>
@@ -157,7 +157,7 @@
       <div class="cls-card" data-cls="engineer">
         <div class="cls-icon">🔧</div>
         <div class="cls-name">Инженер</div>
-        <div class="cls-desc">4 HP · Стд. скорость<br>Q — мина · E — стена<br>КД 500 мс</div>
+        <div class="cls-desc">4 HP · Ср. скорость<br>Q — мина · E — стена<br>КД 650 мс</div>
       </div>
     </div>
 
@@ -273,10 +273,10 @@ const INTERP_SPEED = 0.2;
 
 /* ── Classes ── */
 const CLASSES = {
-  basic:    { name:'Базовый',   icon:'🛡️', hp:3, speed:2.5, halfSize:18, shootCd:600,  dmg:1, mineReduction:1, color2:'#4ade80' },
+  basic:    { name:'Базовый',   icon:'🛡️', hp:3, speed:3.0, halfSize:18, shootCd:500,  dmg:1, mineReduction:1, color2:'#4ade80' },
   scout:    { name:'Скаут',     icon:'⚡', hp:2, speed:4.0, halfSize:14, shootCd:400,  dmg:1, mineReduction:0, color2:'#38bdf8' },
   heavy:    { name:'Тяжёлый',   icon:'💣', hp:5, speed:2.0, halfSize:21, shootCd:1000, dmg:2, mineReduction:0, color2:'#f87171', nukeCd:30000 },
-  engineer: { name:'Инженер',   icon:'🔧', hp:4, speed:3.0, halfSize:18, shootCd:500,  dmg:1, mineReduction:0, color2:'#fbbf24', placeCd:5000 }
+  engineer: { name:'Инженер',   icon:'🔧', hp:4, speed:2.5, halfSize:18, shootCd:650,  dmg:1, mineReduction:0, color2:'#fbbf24', placeCd:4000 }
 };
 
 /* ── Spawns ── */
@@ -354,7 +354,7 @@ window.addEventListener('keydown', e => {
       if(myClass==='scout' && now - Math.floor(myAbilityTs.side/10) >= CLASSES.scout.shootCd)   
         myAbilityTs.side = now * 10 + 1;
       
-      if(myClass==='engineer' && now - Math.floor(myAbilityTs.place/10) >= (CLASSES.engineer.placeCd || 5000)) 
+      if(myClass==='engineer' && now - Math.floor(myAbilityTs.place/10) >= (CLASSES.engineer.placeCd || 4000)) 
         myAbilityTs.place = now * 10 + 1; 
       break;
     }
@@ -363,7 +363,7 @@ window.addEventListener('keydown', e => {
       if(myClass==='scout' && now - Math.floor(myAbilityTs.side/10) >= CLASSES.scout.shootCd)   
         myAbilityTs.side = now * 10 + 2;
         
-      if(myClass==='engineer' && now - Math.floor(myAbilityTs.place/10) >= (CLASSES.engineer.placeCd || 5000)) 
+      if(myClass==='engineer' && now - Math.floor(myAbilityTs.place/10) >= (CLASSES.engineer.placeCd || 4000)) 
         myAbilityTs.place = now * 10 + 2;
       break;
     }
@@ -1466,7 +1466,7 @@ function updateHUD(){
     document.getElementById('ab-nuke').style.color=rem>0?'#64748b':'#f97316';
   }
   if(myClass==='engineer'){
-    const cd = CLASSES.engineer.placeCd || 5000;
+    const cd = CLASSES.engineer.placeCd || 4000;
     // Очищаем время от кода (последней цифры)
     const lastUsed = Math.floor((myAbilityTs.place || 0) / 10);
     const rem = Math.max(0, cd - (nowT - lastUsed));
