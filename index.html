@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн — School Edition v4.1</title>
+  <title>Танки Онлайн — School Edition v4.2</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -395,60 +395,123 @@ function showError(msg){
 }
 
 /* ══════════════════════════════════════════════
-   MAP GENERATION
+MAP GENERATION (UPDATED: BALANCED SYMMETRY)
 ══════════════════════════════════════════════ */
-function safeCell(cx,cy,mode){
-  const spawns = mode==='bedwars'
-    ? [...SPAWNS_BW.red,...SPAWNS_BW.blue]
-    : SPAWNS_FFA;
-  const nearSpawn = spawns.some(s=>Math.abs(s.x-cx)<110&&Math.abs(s.y-cy)<110);
-  const inCenter  = cx>300&&cx<500&&cy>220&&cy<380;
-  // Protect base zones in bedwars
-  const nearBase  = mode==='bedwars' && (cx<120||cx>680);
+function safeCell(cx, cy, mode) {
+  const spawns = mode === 'bedwars' ? [...SPAWNS_BW.red, ...SPAWNS_BW.blue] : SPAWNS_FFA;
+  const nearSpawn = spawns.some(s => Math.abs(s.x - cx) < 110 && Math.abs(s.y - cy) < 110);
+  const inCenter = cx > 300 && cx < 500 && cy > 220 && cy < 380;
+  const nearBase = mode === 'bedwars' && (cx < 120 || cx > 680);
   return !nearSpawn && !inCenter && !nearBase;
 }
 
-function shuffleCells(mode){
-  const cells=[];
-  for(let c=1;c<W/CELL-1;c++) for(let r=1;r<H/CELL-1;r++){
-    const cx=c*CELL+CELL/2, cy=r*CELL+CELL/2;
-    if(safeCell(cx,cy,mode)) cells.push({x:c*CELL,y:r*CELL});
-  }
-  for(let i=cells.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [cells[i],cells[j]]=[cells[j],cells[i]];
-  }
-  return cells;
-}
+function generateMap(mode) {
+  const walls = [];
+  const swamps = [];
+  const mines = [];
 
-function generateMap(mode){
-  const cells=shuffleCells(mode);
-  const used=new Set();
-  const take=()=>{
-    while(cells.length){
-      const c=cells.pop();
-      const k=`${c.x}:${c.y}`;
-      if(!used.has(k)){used.add(k);return c;}
+  // Константы размеров игрового поля
+  const cols = W / CELL; // 20 колонок
+  const rows = H / CELL; // 15 строк
+
+  if (mode === 'bedwars') {
+    // === СИММЕТРИЧНАЯ ГЕНЕРАЦИЯ ДЛЯ BEDWARS ===
+    const halfCols = Math.floor(cols / 2); // Генерируем только левую половину (0-9 колонки)
+    const validCells = [];
+
+    for (let c = 1; c < halfCols; c++) {
+      for (let r = 1; r < rows - 1; r++) {
+        const cx = c * CELL + CELL / 2;
+        const cy = r * CELL + CELL / 2;
+        if (safeCell(cx, cy, mode)) {
+          validCells.push({ c, r, x: c * CELL, y: r * CELL });
+        }
+      }
     }
-    return null;
-  };
 
-  const walls=[], swamps=[], mines=[];
-  for(let i=0;i<48;i++){
-    const c=take(); if(!c) break;
-    const steel=Math.random()<0.22;
-    walls.push({x:c.x,y:c.y,hp:steel?99:1,maxHp:steel?99:1});
+    // Перемешиваем доступные ячейки на левой половине
+    for (let i = validCells.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [validCells[i], validCells[j]] = [validCells[j], validCells[i]];
+    }
+
+    // Распределяем объекты по левой половине и зеркально отражаем на правую
+    // Общие лимиты делим на 2, так как объекты дублируются зеркально
+    let targetWalls = 24;  // 48 / 2
+    let targetSwamps = 5;  // 10 / 2
+    let targetMines = 7;   // 14 / 2
+
+    while (validCells.length > 0) {
+      const cell = validCells.pop();
+      
+      // Вычисляем зеркальную колонку по горизонтали
+      const mirrorC = cols - 1 - cell.c;
+      const mirrorX = mirrorC * CELL;
+
+      if (targetWalls > 0) {
+        const steel = Math.random() < 0.22;
+        const hpVal = steel ? 99 : 1;
+        // Левая стена
+        walls.push({ x: cell.x, y: cell.y, hp: hpVal, maxHp: hpVal });
+        // Правая (зеркальная) стена
+        walls.push({ x: mirrorX, y: cell.y, hp: hpVal, maxHp: hpVal });
+        targetWalls--;
+      } 
+      else if (targetSwamps > 0) {
+        // Левое болото
+        swamps.push({ x: cell.x, y: cell.y });
+        // Правое болото
+        swamps.push({ x: mirrorX, y: cell.y });
+        targetSwamps--;
+      } 
+      else if (targetMines > 0) {
+        // Левая мина
+        mines.push({ x: cell.x + CELL / 2, y: cell.y + CELL / 2, r: MINE_RADIUS, dmg: 2 });
+        // Правая мина
+        mines.push({ x: mirrorX + CELL / 2, y: cell.y + CELL / 2, r: MINE_RADIUS, dmg: 2 });
+        targetMines--;
+      } 
+      else {
+        break;
+      }
+    }
+  } else {
+    // === СТАНДАРТНАЯ ГЕНЕРАЦИЯ ДЛЯ FFA (ОСТАВЛЕНА БЕЗ ИЗМЕНЕНИЙ) ===
+    const cells = [];
+    for (let c = 1; c < cols - 1; c++) {
+      for (let r = 1; r < rows - 1; r++) {
+        const cx = c * CELL + CELL / 2;
+        const cy = r * CELL + CELL / 2;
+        if (safeCell(cx, cy, mode)) cells.push({ x: c * CELL, y: r * CELL });
+      }
+    }
+    for (let i = cells.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cells[i], cells[j]] = [cells[j], cells[i]];
+    }
+
+    const take = () => {
+      return cells.length > 0 ? cells.pop() : null;
+    };
+
+    for (let i = 0; i < 48; i++) {
+      const c = take(); if (!c) break;
+      const steel = Math.random() < 0.22;
+      walls.push({ x: c.x, y: c.y, hp: steel ? 99 : 1, maxHp: steel ? 99 : 1 });
+    }
+    for (let i = 0; i < 10; i++) {
+      const c = take(); if (!c) break;
+      swamps.push({ x: c.x, y: c.y });
+    }
+    for (let i = 0; i < 14; i++) {
+      const c = take(); if (!c) break;
+      mines.push({ x: c.x + CELL / 2, y: c.y + CELL / 2, r: MINE_RADIUS, dmg: 2 });
+    }
   }
-  for(let i=0;i<10;i++){
-    const c=take(); if(!c) break;
-    swamps.push({x:c.x,y:c.y});
-  }
-  for(let i=0;i<14;i++){
-    const c=take(); if(!c) break;
-    mines.push({x:c.x+CELL/2,y:c.y+CELL/2,r:MINE_RADIUS,dmg:2});
-  }
-  return {walls,swamps,mines};
+
+  return { walls, swamps, mines };
 }
+
 
 /* ══════════════════════════════════════════════
    COLLISION HELPERS
