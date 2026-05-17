@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Танки Онлайн — School Edition v4.2</title>
+  <title>Танки Онлайн — School Edition v4.3</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -116,7 +116,7 @@
         </svg>
       </div>
       <h1 class="retro" style="color:#f97316;font-size:12px;line-height:2;margin-bottom:4px;">ТАНКИ ОНЛАЙН</h1>
-      <p style="color:#475569;font-size:12px;">School Edition v4.2 · 2–6 игроков</p>
+      <p style="color:#475569;font-size:12px;">School Edition v4.3 · 2–6 игроков</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:11px;">
       <input class="inp" type="text" id="player-name" placeholder="Введите ваше имя..." maxlength="12" autocomplete="off">
@@ -265,7 +265,7 @@ const RESPAWN_MS = 3000;
 const INPUT_MS   = 50;
 const HOST_TICK  = 1000 / 30;
 const WALL_SIZE  = CELL;
-const SWAMP_SLOW = 0.48;
+const SWAMP_SLOW = 0.24;
 const MINE_RADIUS = 20;
 const FFA_KILL_LIMIT = 20;
 const BW_BASE_HP = 25;
@@ -273,7 +273,7 @@ const INTERP_SPEED = 0.2;
 
 /* ── Classes ── */
 const CLASSES = {
-  basic:    { name:'Базовый',   icon:'🛡️', hp:3, speed:3.0, halfSize:18, shootCd:500,  dmg:1, mineReduction:1, color2:'#4ade80' },
+  basic:    { name:'Базовый',   icon:'🛡️', hp:3, speed:2.8, halfSize:18, shootCd:600,  dmg:1, mineReduction:1, color2:'#4ade80' },
   scout:    { name:'Скаут',     icon:'⚡', hp:2, speed:4.0, halfSize:14, shootCd:400,  dmg:1, mineReduction:0, color2:'#38bdf8' },
   heavy:    { name:'Тяжёлый',   icon:'💣', hp:5, speed:2.0, halfSize:21, shootCd:1000, dmg:2, mineReduction:0, color2:'#f87171', nukeCd:30000 },
   engineer: { name:'Инженер',   icon:'🔧', hp:4, speed:2.5, halfSize:18, shootCd:650,  dmg:1, mineReduction:0, color2:'#fbbf24', placeCd:4000 }
@@ -499,11 +499,11 @@ function generateMap(mode) {
       const steel = Math.random() < 0.22;
       walls.push({ x: c.x, y: c.y, hp: steel ? 99 : 1, maxHp: steel ? 99 : 1 });
     }
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       const c = take(); if (!c) break;
       swamps.push({ x: c.x, y: c.y });
     }
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 24; i++) {
       const c = take(); if (!c) break;
       mines.push({ x: c.x + CELL / 2, y: c.y + CELL / 2, r: MINE_RADIUS, dmg: 2 });
     }
@@ -887,15 +887,53 @@ function canPlayerRespawn(pid){
   return base&&base.hp>0;
 }
 
-function getSpawnFor(pid){
-  const p=G.players[pid];
-  const idx=parseInt(pid.replace('p',''),10)-1;
-  if(gameMode==='bedwars'){
-    const team=p.team||'red';
-    const teamSpawns=SPAWNS_BW[team];
-    return teamSpawns[idx%teamSpawns.length]||teamSpawns[0];
+/* ══════════════════════════════════════════════
+RESPAWN SAFETY FILTER (ANTI-STUCK)
+══════════════════════════════════════════════ */
+function getSpawnFor(pid) {
+  const p = G.players[pid];
+  const idx = parseInt(pid.replace('p', ''), 10) - 1;
+  let baseSpawn;
+
+  // 1. Получаем базовую точку спавна по умолчанию
+  if (gameMode === 'bedwars') {
+    const team = p.team || 'red';
+    const teamSpawns = SPAWNS_BW[team];
+    baseSpawn = teamSpawns[idx % teamSpawns.length] || teamSpawns[0];
+  } else {
+    baseSpawn = SPAWNS_FFA[idx < SPAWNS_FFA.length ? idx : 0];
   }
-  return SPAWNS_FFA[idx<SPAWNS_FFA.length?idx:0];
+
+  // Создаем копию точки, чтобы не испортить глобальные константы
+  let finalSpawn = { x: baseSpawn.x, y: baseSpawn.y, dir: baseSpawn.dir };
+  const currentClass = p.cls || 'basic';
+  const half = CLASSES[currentClass].halfSize;
+
+  // 2. Проверяем, не занята ли точка другим танком
+  // Если занята, смещаем координаты по спирали, пока не найдем свободное место
+  let attempts = 0;
+  const maxAttempts = 25; // Защита от бесконечного цикла
+  let offsetStep = half * 2.5; // Смещение чуть больше размера танка
+
+  while (hitsTank(finalSpawn.x, finalSpawn.y, half, pid) || hitsWall(finalSpawn.x, finalSpawn.y, half)) {
+    attempts++;
+    if (attempts > maxAttempts) break; 
+
+    // Смещаем точку спавна кругами (по спирали) вокруг базовой точки
+    const angle = attempts * 0.9; // Шаг угла
+    const radius = offsetStep * (1 + Math.floor(attempts / 4));
+    
+    let targetX = Math.round(baseSpawn.x + Math.cos(angle) * radius);
+    let targetY = Math.round(baseSpawn.y + Math.sin(angle) * radius);
+
+    // Проверяем, чтобы новая точка не вылетела за границы карты
+    if (!outBounds(targetX, targetY, half)) {
+      finalSpawn.x = targetX;
+      finalSpawn.y = targetY;
+    }
+  }
+
+  return finalSpawn;
 }
 
 /* ══════════════════════════════════════════════
