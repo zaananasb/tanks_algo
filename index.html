@@ -113,7 +113,7 @@
     <div style="margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
         <span style="color:#94a3b8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Игроки</span>
-        <span id="player-count-badge" style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">0/6</span>
+        <span id="player-count-badge" style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">0/10</span>
       </div>
       <div id="player-list" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;"></div>
     </div>
@@ -183,16 +183,35 @@ const WALL_SIZE = CELL;
 const SWAMP_SLOW = 0.48;
 const MINE_DAMAGE = 2;
 const MINE_RADIUS = 20;
+const MAX_PLAYERS = 10;
 
+// 10 спавнов - по одному на каждого игрока (p1..p10)
 const SPAWNS = [
-  { x: 60, y: 60, dir: 'right' },
-  { x: 740, y: 540, dir: 'left' },
-  { x: 740, y: 60, dir: 'left' },
-  { x: 60, y: 540, dir: 'right' },
-  { x: 400, y: 45, dir: 'down' },
-  { x: 400, y: 555, dir: 'up' }
+  { x: 60,  y: 60,  dir: 'right' }, // p1
+  { x: 740, y: 540, dir: 'left'  }, // p2
+  { x: 740, y: 60,  dir: 'left'  }, // p3
+  { x: 60,  y: 540, dir: 'right' }, // p4
+  { x: 400, y: 45,  dir: 'down'  }, // p5
+  { x: 400, y: 555, dir: 'up'    }, // p6
+  { x: 60,  y: 300, dir: 'right' }, // p7 — новый
+  { x: 740, y: 300, dir: 'left'  }, // p8 — новый
+  { x: 220, y: 300, dir: 'up'    }, // p9 — новый
+  { x: 580, y: 300, dir: 'down'  }  // p10 — новый
 ];
-const COLORS = ['#22c55e','#ef4444','#3b82f6','#eab308','#a855f7','#f97316'];
+
+// 10 уникальных цветов под цвет каждого танка
+const COLORS = [
+  '#22c55e', // p1 green
+  '#ef4444', // p2 red
+  '#3b82f6', // p3 blue
+  '#eab308', // p4 yellow
+  '#a855f7', // p5 purple
+  '#f97316', // p6 orange
+  '#06b6d4', // p7 cyan
+  '#ec4899', // p8 pink
+  '#84cc16', // p9 lime
+  '#14b8a6'  // p10 teal
+];
 
 let myId = null;
 let myName = '';
@@ -212,11 +231,9 @@ const G = {
   particles: []
 };
 
-// Client-side interpolation: we smoothly move render positions towards server positions
-// For non-host clients, this eliminates the jittery movement from Firebase updates
-const renderTanks = {}; // { pid: { x, y } }
-const renderTargets = {}; // { pid: { x, y } }
-const INTERP_SPEED = 0.18; // how fast we catch up per frame (0-1)
+const renderTanks = {};
+const renderTargets = {};
+const INTERP_SPEED = 0.18;
 
 const myKeys = { up:false, down:false, left:false, right:false };
 let myShootTs = 0;
@@ -467,15 +484,25 @@ document.getElementById('btn-join').onclick = async () => {
   if (!data) return showError('Комната не найдена!');
   if (data.status === 'playing') return showError('Игра уже идет!');
 
-  const pKeys = Object.keys(data.players || {});
-  if (pKeys.length >= 6) return showError('Комната заполнена (6/6)!');
+  const players = data.players || {};
+  if (Object.keys(players).length >= MAX_PLAYERS) {
+    return showError(`Комната заполнена (${MAX_PLAYERS}/${MAX_PLAYERS})!`);
+  }
 
-  const idx = pKeys.length;
-  myId = 'p' + (idx + 1);
-  const sp = SPAWNS[idx < SPAWNS.length ? idx : 0];
+  // Ищем первый свободный слот p1..p10 — это фиксит баг, когда при выходе игрока
+  // новый получал ID существующего и перезаписывал его.
+  let mySlot = 0;
+  for (let i = 1; i <= MAX_PLAYERS; i++) {
+    if (!players['p' + i]) { mySlot = i; break; }
+  }
+  if (!mySlot) return showError('Комната заполнена!');
+
+  myId = 'p' + mySlot;
+  const sp = SPAWNS[mySlot - 1] || SPAWNS[0];
+  const color = COLORS[(mySlot - 1) % COLORS.length];
 
   await update(ref(db, `rooms/${roomCode}/players`), {
-    [myId]:{ name:myName, color:COLORS[idx], x:sp.x, y:sp.y, dir:sp.dir, hp:MAX_HP, lives:MAX_LIVES, score:0, dead:false, respawnAt:0 }
+    [myId]:{ name:myName, color, x:sp.x, y:sp.y, dir:sp.dir, hp:MAX_HP, lives:MAX_LIVES, score:0, dead:false, respawnAt:0 }
   });
   onDisconnect(ref(db, `rooms/${roomCode}/players/${myId}`)).remove();
   openLobby();
@@ -494,7 +521,6 @@ function openLobby() {
 
     if (!(isHost && gameRunning)) {
       const newPlayers = data.players || {};
-      // For non-host clients: initialize render targets and render positions
       for (const [pid, p] of Object.entries(newPlayers)) {
         if (!renderTargets[pid]) {
           renderTargets[pid] = { x: p.x, y: p.y };
@@ -504,7 +530,6 @@ function openLobby() {
           renderTargets[pid].y = p.y;
         }
       }
-      // Remove tanks that left
       for (const pid of Object.keys(renderTargets)) {
         if (!newPlayers[pid]) { delete renderTargets[pid]; delete renderTanks[pid]; }
       }
@@ -516,7 +541,7 @@ function openLobby() {
     }
 
     const entries = Object.entries(data.players || {});
-    document.getElementById('player-count-badge').textContent = `${entries.length}/6`;
+    document.getElementById('player-count-badge').textContent = `${entries.length}/${MAX_PLAYERS}`;
     document.getElementById('player-list').innerHTML = entries.map(([id,p]) => `
       <div class="pcard">
         <div class="dot" style="background:${p.color}"></div>
@@ -542,7 +567,6 @@ function openLobby() {
         G.mines = JSON.parse(JSON.stringify(data.mines || []));
         G.bullets = {};
       } else {
-        // Initialize interpolation for non-host
         const pl = data.players || {};
         for (const [pid, p] of Object.entries(pl)) {
           renderTargets[pid] = { x: p.x, y: p.y };
@@ -667,7 +691,7 @@ function hostTick(ts) {
   for (const [pid, p] of Object.entries(G.players)) {
     if (p.dead && p.lives > 0 && p.respawnAt > 0 && now >= p.respawnAt) {
       const idx = parseInt(pid.replace('p', ''), 10) - 1;
-      const sp = SPAWNS[idx < SPAWNS.length ? idx : 0];
+      const sp = SPAWNS[idx] || SPAWNS[0];
       p.dead = false; p.hp = MAX_HP; p.x = sp.x; p.y = sp.y; p.dir = sp.dir; p.respawnAt = 0;
       fb[`players/${pid}/dead`] = false;
       fb[`players/${pid}/hp`] = MAX_HP;
@@ -759,20 +783,16 @@ function hostTick(ts) {
   checkEndGame();
 }
 
-// Smooth interpolation for non-host clients: move renderTanks towards renderTargets
 function interpolateTanks() {
   for (const [pid, p] of Object.entries(G.players)) {
-    if (pid === myId) continue; // our own tank is controlled locally, no interpolation needed
+    if (pid === myId) continue;
     if (!renderTanks[pid] || !renderTargets[pid] || p.dead) continue;
     const rt = renderTanks[pid];
     const tg = renderTargets[pid];
-    // Lerp towards target
     rt.x += (tg.x - rt.x) * INTERP_SPEED;
     rt.y += (tg.y - rt.y) * INTERP_SPEED;
-    // Snap if very close
     if (Math.abs(rt.x - tg.x) < 0.3) rt.x = tg.x;
     if (Math.abs(rt.y - tg.y) < 0.3) rt.y = tg.y;
-    // Override the player's x,y for rendering only (we draw from G.players)
     p._renderX = rt.x;
     p._renderY = rt.y;
   }
@@ -885,7 +905,6 @@ function drawTanks() {
   for (const [id, p] of Object.entries(G.players)) {
     if (!p || p.dead || typeof p.x !== 'number' || typeof p.y !== 'number') continue;
     const isMe = id === myId;
-    // Use interpolated position for non-host clients (other tanks)
     const drawX = (!isMe && !isHost && typeof p._renderX === 'number') ? p._renderX : p.x;
     const drawY = (!isMe && !isHost && typeof p._renderY === 'number') ? p._renderY : p.y;
     const { dir, color, hp } = p;
@@ -992,7 +1011,7 @@ function updateHUD() {
 }
 
 document.getElementById('player-name').focus();
-console.log('Tanki Online: swamps, mines and full-width walls enabled');
+console.log('Tanki Online: up to', MAX_PLAYERS, 'players');
 </script>
 </body>
 </html>
